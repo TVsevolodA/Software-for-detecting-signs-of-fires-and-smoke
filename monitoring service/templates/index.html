@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>Monitoring</title>
+  </head>
+  <body>
+    <h1>Video Streaming Demonstration</h1>
+<!-- 
+    <img id="bg" src="{{ url_for('video_feed', id=0) }}" alt="Не удалось получить доступ к камере">
+    <img id="bg" src="{{ url_for('video_feed', id=1) }}" alt="Не удалось получить доступ к камере">
+     -->
+    <script>
+      const cameraСounter = Number('{{cameraСounter}}');
+      for (let i = 0; i < cameraСounter; i++)
+      {
+        let stream = document.createElement('img');
+        let url = "{{ url_for('video_feed', id='value') }}".replace('value', i);
+        stream.src = url;
+        stream.alt = 'Не удалось получить доступ к камере';
+        document.body.append(stream);
+      }
+    </script>
+  </body>
+</html>

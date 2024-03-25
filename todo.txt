@@ -1,0 +1,121 @@
+Для запуска камер:
+1) ffmpeg -re -probesize 32 -analyzeduration 0 -fflags +genpts -stream_loop -1 -i 1.mp4 -c:v libx264 -c:a aac -s 352x288 -f flv rtmp://camera:5000/hls/xxx
+2) ffmpeg -re -probesize 32 -analyzeduration 0 -fflags +genpts -stream_loop -1 -i 2.mp4 -c:v libx264 -c:a aac -s 352x288 -f flv rtmp://hi_watch:5000/hls/xxx
+
+
+Нужно сделать:
+1) Возможно нужно сжимать изображения!
+2) В data_service:
+    2.1) Для таблиц location_cameras, cameras - DELETE (Удалять данные из kafka + db + добавить UI)
+    2.3) Для таблицы reports - CREATE, READ, UPDATE
+    2.4) Для таблицы notifications - CREATE, READ
+4) Регистрация и авторизация
+5) Дописать недостающие таблицы в БД
+7) Действия по расписанию
+
+
+
+saveRecord data_service
+    // do $$
+    // BEGIN
+    //    IF EXISTS (SELECT FROM notifications WHERE camera_data = $1 AND NOT report_compiled) THEN
+    //        UPDATE notifications SET datetime = $2, type_event = $3, captured_image = $4 WHERE camera_data = $1 AND NOT report_compiled;
+    //    ELSE
+    //        INSERT INTO notifications (camera_data, datetime, type_event, captured_image) VALUES ($1, $2, $3, $4);
+    //    END IF;
+    // END
+    // $$;
+
+    
+    // await pool.query(`
+    // INSERT INTO notifications (camera_data, datetime, type_event, captured_image)
+    //                     VALUES ($1, $2, $3, $4)
+    //                     ON CONFLICT (camera_data)
+    //                     DO UPDATE SET datetime = excluded.datetime,
+    //                                 type_event = excluded.type_event,
+    //                                 captured_image = excluded.captured_image;
+    //                                 `,
+    //                 [camera_data, datetime, type_event, captured_image]);
+    #======================================================================
+
+
+
+Регистрация камеры!:
+    /*
+    ДОбавление в БД.
+    INSERT INTO cameras (name_camera, camera_location, url_address, status)
+    VALUES ($1, $2, $3)
+    ON CONFLICT (name_camera)
+    DO UPDATE SET camera_location = excluded.camera_location,
+                  url_address = excluded.url_address,
+                  status = excluded.status
+    RETURNING camera_id;
+    */
+        for index, source in enumerate(list_sources):
+            response = requests.get(source + DATA_RECEIVING_ADDRESS)
+            dict_camera_data = response.json()
+
+            camera_registration_result = requests.post('http://data_service_sm:3000/registerCamera', json=dict_camera_data)
+            requests_json = json.loads(camera_registration_result.text)
+
+            self.list_camera_id.append(requests_json['camera_id'])
+            name_camera = dict_camera_data['name_camera']
+            self.producer.create_topics([name_camera])
+            self.list_camera_name.append(name_camera)
+            cap = cv2.VideoCapture(source + STREAM_ADDRESS)
+            if cap is None or not cap.isOpened():
+
+Взаимодействие с Kafka-python:
+# import os
+# from kafka.admin import KafkaAdminClient, NewTopic
+# from kafka import KafkaConsumer
+
+# BROKER = os.getenv("KAFKA_DEFAULT_BROKER")
+# admin_client = KafkaAdminClient(bootstrap_servers=BROKER)
+
+# def get_topics():
+#     return admin_client.list_topics()
+
+# """
+# Функция администратора.
+# """
+# def create_topics(topic_names):
+        # QUANTITY_PARTITIONS = 1
+        # REPLICATION_FACTOR = 1
+#     topic_list = get_topics()
+#     existing_topic_list = topic_list
+#     print(f'Список топиков: {list(topic_list)}')
+#     topic_list = []
+#     for topic in topic_names:
+#         if topic not in existing_topic_list:
+#             print(f'Топик : {topic} добавлен.')
+#             topic_list.append(NewTopic(name=topic, num_partitions=QUANTITY_PARTITIONS, replication_factor=REPLICATION_FACTOR))
+#         else:
+#             print('Топик : {topic} уже существует.')
+#     try:
+#         if topic_list:
+#             admin_client.create_topics(new_topics=topic_list, validate_only=False)
+#             print("Топик успешно создан.")
+#         else:
+#             print("Топик существует")
+#     except  Exception as e:
+#         print(e)
+
+# """
+# Функция администратора.
+# """
+# def delete_topics(topic_names): pass
+
+# create_topics(['purchases'])
+# topics = get_topics()
+# # =========================================================== #
+
+# consumer = KafkaConsumer(
+#     bootstrap_servers=BROKER,
+#     auto_offset_reset="earliest",
+# )
+# consumer.subscribe(topics)
+
+# for message in consumer:
+#     msg = message.value.decode('utf-8')
+#     print(f'Сообщение из топика: {msg}')

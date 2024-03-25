@@ -1,0 +1,89 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    container_name: zookeeper
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  broker:
+    image: confluentinc/cp-kafka
+    hostname: broker
+    container_name: broker
+    ports:
+      - 29092:29092
+    depends_on:
+      - zookeeper
+    environment:
+      # KAFKA_ADVERTISED_HOST_NAME: broker
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,CONNECTIONS_FROM_HOST://broker:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONNECTIONS_FROM_HOST:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  
+  data_service:
+    container_name: data_service_sm
+    build: ./data service
+    env_file:
+      - ./data service/.env
+    depends_on:
+      - broker
+      - db
+    ports:
+      - 3000:3000
+
+  # NodeJS
+  # reportingService:
+  #   image: reporting_service_sm
+  #   container_name: reporting_service_sm
+  #   build: "./reporting service"
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - broker
+  #   ports:
+  #     - 4000:4000
+  
+  # Python
+  monitoringService:
+    # monitoring_service_sm
+    # monitoring-template
+    image: monitoring-template
+    container_name: monitoring_service_sm
+    # build: "./monitoring service"
+    # develop:
+    #   watch:
+    #     - action: rebuild
+    #       path: "./"
+    env_file:
+      - monitoring service/.env
+    # depends_on:
+    #   - broker
+    ports:
+      - 5050:5050 # Видео трансляция
+
+  camera:
+    hostname: camera
+    container_name: camera
+    build: ./nginx
+    ports:
+      - 5040:5040
+
+  camera_hi_watch:
+    hostname: hi_watch
+    container_name: hi_watch
+    build: ./ip camera
+    ports:
+      - 5030:5030
+
+  db:
+    image: postgres
+    container_name: db
+    env_file:
+      - ./data service/.env
+    ports:
+      - 5432:5432
+    volumes:
+      - ./schema_db.sql:/docker-entrypoint-initdb.d/init_tables.sql

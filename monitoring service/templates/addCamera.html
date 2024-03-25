@@ -1,0 +1,16 @@
+<html>
+  <head>
+    <title>AddCamera</title>
+  </head>
+  <body>
+    <form action="{{ url_for('addedCamera') }}" method="post">
+        <div>
+            <label for="url">URL-адрес</label>
+            <input type="url" id="url" name="url" required="true">
+        </div>
+        <div>
+            <input type="submit" value="Добавить">
+        </div>
+    </form>
+  </body>
+</html>

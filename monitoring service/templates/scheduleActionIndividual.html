@@ -1,0 +1,99 @@
+<html>
+  <head>
+    <title>scheduleActionIndividual</title>
+    <!-- BootStrap -->
+    <link href=" https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet" >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body, .horizontalCenteringBlocks, #frequencySelectionBlock {
+            display: flex;
+        }
+        body, .horizontalCenteringBlocks {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        main {
+            padding: 2% 5%;
+        }
+        main, #frequencySelectionBlock {
+            width: 50%;
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+    </style>
+  </head>
+  <body>
+    <main>
+        <form action="{{ url_for('setAction') }}" method="post">
+            <div class="horizontalCenteringBlocks">
+                <h3>Создать новое действие</h3>
+            </div>
+            <div id="basicInformationBlock">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Название</label>
+                    <input type="text" id="title" name="title" required="true" placeholder="Наименование действия" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Описание</label>
+                    <input type="text" id="description" name="description" required="true" placeholder="Назначение действия" class="form-control">
+                </div>
+            </div>
+            <div id="periodicityBlock">
+                <div class="mb-3">
+                    <label for="description" class="form-label">Периодичность</label>
+                    <div class="input-group mb-3">
+                        <input type="number" id="frequency" name="frequency" required="true" min="1" class="form-control" style="flex: 2;">
+                        <div id="frequencySelectionBlock">
+                            <label class="input-group-text" for="timeIntervalFrequency">в</label>
+                            <select id="timeIntervalFrequency" name="timeIntervalFrequency" class="form-select">
+                                <option value="second" selected>секунду</option>
+                                <option value="minute">минуту</option>
+                                <option value="hour">час</option>
+                                <option value="day">день</option>
+                                <option value="week">неделю</option>
+                                <option value="month">месяц</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Продолжительность</label>
+                    <div class="input-group mb-3">
+                        <input type="number" id="duration" name="duration" required="true" min="1" class="form-control">
+                        <div style="width: 50%;">
+                            <select id="timeIntervaldDuration" name="timeIntervaldDuration" class="form-select">
+                                <option value="second" selected>секунду</option>
+                                <option value="minute">минуту</option>
+                                <option value="hour">час</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="actionSelectionBlock">
+                <div class="mb-3">
+                    <label for="action" class="form-label">Действие</label>
+                    <select id="action" name="action" class="form-select">
+                        <option value="screenshot" selected>Сделать снимок</option>
+                        <option value="generateReport">Сформировать отчет (с одной камеры)</option>
+                        <option value="collectStatisticsCameras">Собрать статистику с камер (со всех камер)</option>
+                        <option value="collectStatisticsServer">Собрать статистику сервера (log)</option>
+                        <option value="checkingSystem">Проверка системы (проверка доступности камер)</option>
+                        <option value="notify">Оповестить</option>
+                    </select>
+                </div>
+            </div>
+            <div class="horizontalCenteringBlocks">
+                <input class="btn btn-primary" type="submit" value="Добавить">
+            </div>
+        </form>
+    </main>
+    <!-- BootStrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script></script>
+  </body>
+</html>

@@ -40,6 +40,10 @@ app.get('/getListSources', async (request, response) => {
   response.json(listSources);
 });
 
+
+app.get('/getEventTriggers', async (request, response) => await databaseManager.getEventTriggers(request, response));
+app.get('/addEventTrigger', async (request, response) => await databaseManager.addEventTrigger(request, response));
+
 // TODO: Рабочий вариант! Потом доработать до полноценноценной страницы просмотра данных с БД!
 app.get('/getFrame', (request, response) => {
   let message = databaseManager.getRecord();

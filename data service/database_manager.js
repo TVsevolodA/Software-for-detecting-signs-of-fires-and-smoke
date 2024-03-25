@@ -67,6 +67,7 @@ async function saveRecord (msg) {
     // TODO: Для отладки
     message = msg;
 
+    // TODO: добавить передаваемое поле duty (дежурный), для оформления записи в отчете!
     const obj = JSON.parse(msg);
     const camera_data = obj.camera_data;
     const datetime = obj.datetime;
@@ -81,14 +82,33 @@ async function saveRecord (msg) {
         if (value) type_event += key + ': ' + value + ', ';
     const captured_image = obj.Image;
     type_event = type_event.substring(0, type_event.length - 1);
-    const numberMatches = (await pool.query(`SELECT FROM notifications WHERE camera_data = $1 AND NOT report_compiled;`, [camera_data])).rowCount;
-    console.log(`Получили записей из бд: ${numberMatches}`);
+    const incidents = await pool.query(`SELECT incident_id FROM notifications WHERE camera_data = $1 AND NOT report_compiled;`, [camera_data]);
+    const numberMatches = incidents.rowCount;
+
+    let incidentId;
+    let type_action_report;
     if (Number(numberMatches) > 0) {
         await pool.query(`UPDATE notifications SET datetime = $2, type_event = $3, captured_image = $4 WHERE camera_data = $1 AND NOT report_compiled;`, [camera_data, datetime, type_event, captured_image]);
+        incidentId = incidents.rows[0].incident_id;
+        type_action_report = 'update';
     }
     else {
-        await pool.query(`INSERT INTO notifications (camera_data, datetime, type_event, captured_image) VALUES ($1, $2, $3, $4);`, [camera_data, datetime, type_event, captured_image]);
+        const db_res = await pool.query(`INSERT INTO notifications (camera_data, datetime, type_event, captured_image) VALUES ($1, $2, $3, $4) RETURNING incident_id;`, [camera_data, datetime, type_event, captured_image]);
+        incidentId = db_res.rows[0].incident_id;
+        type_action_report = 'create';
     }
+    const dutyId = 1; // FIXME: изменить на залогиненного пользователя!
+    const report = {
+        'number_incident': incidentId,
+        'datetime': datetime,
+        'duty': dutyId,
+        'description': type_event,
+        'measures_taken': '',
+        'consequences': '',
+        'conclusion': ''
+    };
+    if (type_action_report === 'update') updateReport(report);
+    else addReport(report, camera_data);
 }
 
 function registerCamera(request, response) {
@@ -126,6 +146,62 @@ async function getListSources() {
     return sources;
 }
 
+async function addEventTrigger(request, response) {
+    const trigger = request.body;
+    const title = trigger['title'];
+    const description = trigger['description'];
+    const recurring_event = trigger['recurring_event'] === 'True';
+    const dateTrigger = trigger['date_event'];
+    const date_event = (dateTrigger === null || dateTrigger.length === 0) ? null : dateTrigger;
+    const frequency = Number(trigger['frequency']);
+    const timeIntervalFrequency = trigger['timeIntervalFrequency'];
+    const duration = Number(trigger['duration']);
+    const timeIntervalDuration = trigger['timeIntervalDuration'];
+    const action = trigger['action'];
+    const resAddTrigger = await pool.query(`INSERT INTO triggers (
+        title,
+        description,
+        recurring_event,
+        date_event,
+        frequency,
+        time_interval_frequency,
+        duration,
+        time_interval_duration,
+        action
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING trigger_id;`,
+        [
+            title,
+            description,
+            recurring_event,
+            date_event,
+            frequency,
+            timeIntervalFrequency,
+            duration,
+            timeIntervalDuration,
+            action
+        ]);
+    const id_trigger = resAddTrigger.rows[0].trigger_id;
+    console.log(`Получили id триггера: ${id_trigger}`);
+    response.status(201).json({'id_event': id_trigger});
+}
+
+async function getEventTriggers(request, response) {
+    const triggerObjects = await pool.query('SELECT * FROM triggers');
+    const triggers = triggerObjects.rows.map(row => ({
+        id_trigger: row.trigger_id,
+        title: row.title,
+        description: row.description,
+        recurring_event: row.recurring_event,
+        date_event: row.date_event,
+        frequency: row.frequency,
+        timeIntervalFrequency: row.time_interval_frequency,
+        duration: row.duration,
+        timeIntervalDuration: row.time_interval_duration,
+        action: row.action,
+    }));
+    response.status(200).json(triggers);
+}
+
 
 /// Поиск записи по расписанию или времени
 // TODO: Сделать страницу под функцию! Проверить все комбинации: оба null, только один null, ни один не null.
@@ -154,11 +230,38 @@ async function recordSearch(name_camera = null, dateTime = null) {
     return new Array();
 }
 
-// TODO: создание отчета
-// async function addReport() {
-//     INSERT INTO reports (number_incident, datetime, duty, description, measures_taken, consequences, conclusion) VALUES (1, '01-01-2013 09:00:00', 1, 'пожар', 'пзд', 'еще пзд', 'хана');
-//     UPDATE notifications SET report_compiled = TRUE WHERE camera_data = 1 AND NOT report_compiled;
-// }
+async function addReport(report, idCamera) {
+    pool.query(`INSERT INTO reports (
+        number_incident,
+        datetime,
+        duty,
+        description,
+        measures_taken,
+        consequences,
+        conclusion)
+        VALUES ($1, $2, $3, $4, $5, $6, $7);`,
+        [
+            report['number_incident'],
+            report['datetime'],
+            report['duty'],
+            report['description'],
+            report['measures_taken'],
+            report['consequences'],
+            report['conclusion']
+        ]);
+    await pool.query(`UPDATE notifications
+                      SET report_compiled = TRUE
+                      WHERE camera_data = $1 AND NOT report_compiled;`,
+                      [idCamera]);
+}
+
+async function updateReport(newReport) {
+    await pool.query(`UPDATE reports
+    SET datetime = $1, description = $2, measures_taken = $3, consequences = $4, conclusion = $5
+    WHERE number_incident = $6;`,
+    [newReport['datetime'], newReport['description'], newReport['measures_taken'],
+    newReport['consequences'], newReport['conclusion'], newReport['number_incident']]);
+}
 
 // TODO: Сделать страницу под функцию! Проверить!
 async function getReport(name_camera = null, dateTimeBeginning = null, dateTimeEnding = null) {
@@ -193,4 +296,6 @@ module.exports = {
     registerCamera,
     getListSources,
     infoCamera,
+    getEventTriggers,
+    addEventTrigger,
 }

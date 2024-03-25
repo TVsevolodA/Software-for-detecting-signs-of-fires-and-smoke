@@ -1,12 +1,17 @@
+from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, render_template, Response, request, redirect, url_for
+from flask_socketio import SocketIO
+from threading import Lock
 from camera_builder import camerasBuilder
+from scheduler import Scheduler
 import json
 import requests
 
-app = Flask(__name__)
+scheduler = BackgroundScheduler()
+action_planner = Scheduler(scheduler)
+scheduler.start()
 
-from flask_socketio import SocketIO
-from threading import Lock
+app = Flask(__name__)
 
 customer_videos = {}
 thread = None
@@ -70,8 +75,6 @@ def infoСamera(camera, idStream):
         if camera == 'all':
             return render_template('infoСamera.html', infoCameras=dict_req)
         else:
-            # camera_name = dict_req[0]['name']
-            # infoCameras=camera_name,
             return render_template('infoСameraAlone.html', stream=idStream)
     else:
         return f'<h1>Ошибка:\n{dict_req}</h1>'
@@ -83,15 +86,8 @@ def scheduledActions(idCamera):
 
 @app.route('/setAction', methods=["POST"])
 def setAction():
-    # TODO: дописать логику на получение данных с формы! + Добавление триггеров!
     data = request.form
-    title = data['title']
-    description = data['description']
-    frequency = data['frequency']
-    timeIntervalFrequency = data['timeIntervalFrequency']
-    duration = data['duration']
-    timeIntervaldDuration = data['timeIntervaldDuration']
-    print(f'Получили из формы периодичность: {frequency} и время: {timeIntervalFrequency}')
+    action_planner.add_task(data)
     return redirect(url_for('index'))
 
 def background_thread(id):

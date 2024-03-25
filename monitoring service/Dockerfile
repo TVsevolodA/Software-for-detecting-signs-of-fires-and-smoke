@@ -4,6 +4,7 @@ RUN pip install --upgrade pip
 RUN pip install kafka-python
 RUN pip install flask
 RUN pip install Flask-SocketIO
+RUN pip install Flask-APScheduler
 RUN pip install python-dotenv
 
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y

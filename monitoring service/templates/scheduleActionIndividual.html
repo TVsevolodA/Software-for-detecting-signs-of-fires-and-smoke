@@ -42,6 +42,9 @@
                     <input type="text" id="description" name="description" required="true" placeholder="Назначение действия" class="form-control">
                 </div>
             </div>
+            <input type="text" id="recurring_event" name="recurring_event" value="True">
+            <input type="datetime" id="date_event" name="date_event" value="">
+            <!-- TODO: добавить поле recurring_event BOOL (повторяющееся событие), date_event DATETIME (дата события - 4 (из-за времени в контейнере))- -->
             <div id="periodicityBlock">
                 <div class="mb-3">
                     <label for="description" class="form-label">Периодичность</label>
@@ -65,7 +68,7 @@
                     <div class="input-group mb-3">
                         <input type="number" id="duration" name="duration" required="true" min="1" class="form-control">
                         <div style="width: 50%;">
-                            <select id="timeIntervaldDuration" name="timeIntervaldDuration" class="form-select">
+                            <select id="timeIntervaldDuration" name="timeIntervalDuration" class="form-select">
                                 <option value="second" selected>секунду</option>
                                 <option value="minute">минуту</option>
                                 <option value="hour">час</option>
@@ -78,7 +81,6 @@
                 <div class="mb-3">
                     <label for="action" class="form-label">Действие</label>
                     <select id="action" name="action" class="form-select">
-                        <option value="screenshot" selected>Сделать снимок</option>
                         <option value="generateReport">Сформировать отчет (с одной камеры)</option>
                         <option value="collectStatisticsCameras">Собрать статистику с камер (со всех камер)</option>
                         <option value="collectStatisticsServer">Собрать статистику сервера (log)</option>

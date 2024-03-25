@@ -38,15 +38,28 @@ CREATE TABLE reports (
   datetime        TIMESTAMP NOT NULL,
   duty            INTEGER REFERENCES users (user_id), -- дежурный
   description     VARCHAR (1000) NOT NULL,            -- описание ситуации
-  measures_taken  VARCHAR (1000) NOT NULL,            -- принятые меры
-  consequences    VARCHAR (1000) NOT NULL,            -- последствия
-  conclusion      VARCHAR (1000) NOT NULL            -- заключение
+  measures_taken  VARCHAR (1000) NULL,            -- принятые меры
+  consequences    VARCHAR (1000) NULL,            -- последствия
+  conclusion      VARCHAR (1000) NULL            -- заключение
 );
+
+CREATE TABLE triggers (
+  trigger_id            SERIAL PRIMARY KEY,
+  title                 VARCHAR (1000) NOT NULL,
+  description           VARCHAR (1000) NOT NULL,
+  recurring_event       BOOLEAN DEFAULT TRUE,
+  date_event            TIMESTAMP NULL,
+  frequency             INTEGER,
+  time_interval_frequency VARCHAR (100) NOT NULL,
+  duration              INTEGER,
+  time_interval_duration VARCHAR (100) NOT NULL,
+  action                VARCHAR (100) NOT NULL
+);
+
+INSERT INTO users (username, email, password_hash, role) VALUES ('Трифонов В.А.', 'ttt@ya.ru', 'awer123', 'duty');
 
 INSERT INTO location_cameras (longitude, latitude, address) VALUES (45.980185, 51.529657, 'г.Саратов,ул.Политехническая,77');
 -- INSERT INTO location_cameras (longitude, latitude, address) VALUES (46.02105074284403, 51.53410530670002, 'Саратов, улица имени В.И. Чапаева, 61');
 
 INSERT INTO cameras (name_camera, camera_location, url_address, status) VALUES ('Xiaomi_Smart_Camera', 1, 'http://camera:5040', true);
 -- INSERT INTO cameras (name_camera, camera_location, url_address, status) VALUES ('Hi_Watch', 2, 'http://hi_watch:5030', true);
-
--- TODO: создать еще таблицы: Пользователи, (Интнерфейс, связан с пользователем).

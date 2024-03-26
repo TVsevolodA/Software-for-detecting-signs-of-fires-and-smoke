@@ -82,8 +82,9 @@ async function saveRecord (msg) {
         if (value) type_event += key + ': ' + value + ', ';
     const captured_image = obj.Image;
     type_event = type_event.substring(0, type_event.length - 1);
-    const incidents = await pool.query(`SELECT incident_id FROM notifications WHERE camera_data = $1 AND NOT report_compiled;`, [camera_data]);
+    const incidents = await pool.query(`SELECT * FROM notifications WHERE camera_data = $1 AND NOT report_compiled;`, [camera_data]);
     const numberMatches = incidents.rowCount;
+    console.log(numberMatches);
 
     let incidentId;
     let type_action_report;
@@ -107,8 +108,8 @@ async function saveRecord (msg) {
         'consequences': '',
         'conclusion': ''
     };
-    if (type_action_report === 'update') updateReport(report);
-    else addReport(report, camera_data);
+    // if (type_action_report === 'update') updateReport(report);
+    // else addReport(report, camera_data);
 }
 
 function registerCamera(request, response) {
@@ -231,6 +232,7 @@ async function recordSearch(name_camera = null, dateTime = null) {
 }
 
 async function addReport(report, idCamera) {
+    // TODO: добавление отчета не обязательно должно обновлять запись с уведомлением!
     pool.query(`INSERT INTO reports (
         number_incident,
         datetime,

@@ -27,14 +27,15 @@ CREATE TABLE notifications (
 CREATE TABLE users (
   user_id         SERIAL PRIMARY KEY,
   username        VARCHAR (100) NOT NULL,
-  email           VARCHAR (100) NOT NULL,
+  email           VARCHAR (100) NOT NULL UNIQUE,
   password_hash   VARCHAR (100) NOT NULL,
   role            VARCHAR (100) NOT NULL
 );
 
 CREATE TABLE reports (
   report_id       SERIAL PRIMARY KEY,
-  number_incident INTEGER REFERENCES notifications (incident_id) UNIQUE,
+  event_based     BOOLEAN DEFAULT FALSE,  -- флаг событийности 
+  number_incident INTEGER REFERENCES notifications (incident_id),
   datetime        TIMESTAMP NOT NULL,
   duty            INTEGER REFERENCES users (user_id), -- дежурный
   description     VARCHAR (1000) NOT NULL,            -- описание ситуации
@@ -45,6 +46,7 @@ CREATE TABLE reports (
 
 CREATE TABLE triggers (
   trigger_id            SERIAL PRIMARY KEY,
+  idCamera              INTEGER,
   title                 VARCHAR (1000) NOT NULL,
   description           VARCHAR (1000) NOT NULL,
   recurring_event       BOOLEAN DEFAULT TRUE,
@@ -56,7 +58,7 @@ CREATE TABLE triggers (
   action                VARCHAR (100) NOT NULL
 );
 
-INSERT INTO users (username, email, password_hash, role) VALUES ('Трифонов В.А.', 'ttt@ya.ru', 'awer123', 'duty');
+INSERT INTO users (username, email, password_hash, role) VALUES ('', '', '', 'system');
 
 INSERT INTO location_cameras (longitude, latitude, address) VALUES (45.980185, 51.529657, 'г.Саратов,ул.Политехническая,77');
 -- INSERT INTO location_cameras (longitude, latitude, address) VALUES (46.02105074284403, 51.53410530670002, 'Саратов, улица имени В.И. Чапаева, 61');

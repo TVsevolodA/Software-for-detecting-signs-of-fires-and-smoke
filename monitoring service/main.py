@@ -65,9 +65,9 @@ def addedCamera():
         res = dict_req['result']
         return f'<h1>Ошибка! {res}</h1>'
 
-@app.route('/infoСamera', methods=["GET"], defaults={'camera': 'all', 'idStream': '-1'})
-@app.route('/infoСamera/cameras/<camera>/<idStream>')
-def infoСamera(camera, idStream):
+@app.route('/infoСamera', methods=["GET"], defaults={'camera': 'all', 'idCamera': '-1', 'idStream': '-1'})
+@app.route('/infoСamera/cameras/<camera>/<idCamera>/<idStream>')
+def infoСamera(camera, idCamera, idStream):
     requestBody = '{"camera": "' + camera + '"}'
     req = requests.get('http://data_service_sm:3000/infoCamera', json=json.loads(requestBody))
     dict_req = json.loads(req.text)
@@ -75,12 +75,13 @@ def infoСamera(camera, idStream):
         if camera == 'all':
             return render_template('infoСamera.html', infoCameras=dict_req)
         else:
-            return render_template('infoСameraAlone.html', stream=idStream)
+            return render_template('infoСameraAlone.html', idCamera=int(idCamera), stream=idStream)
     else:
         return f'<h1>Ошибка:\n{dict_req}</h1>'
 
-@app.route('/scheduledActions/<idCamera>', methods=["GET"], defaults={'idCamera': '-1'})
+@app.route('/scheduledActions/<idCamera>', methods=["GET"])
 def scheduledActions(idCamera):
+    print(idCamera)
     # TODO: 2 страницы. 1) страница с одной задачей 2) с задачами, если их несколько на одной камере
     return render_template('scheduleActionIndividual.html', idCamera=idCamera)
 

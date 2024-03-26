@@ -31,6 +31,7 @@ class Scheduler():
         if not availability_in_db:
             req = requests.get('http://data_service_sm:3000/addEventTrigger', json=info_trigger)
             dict_req = json.loads(req.text)
+            print(f'Получили ответ о DS: {dict_req}')
             id_event = str(dict_req['id_event'])
         else:
             id_event = str(info_trigger['id_trigger'])
@@ -38,10 +39,22 @@ class Scheduler():
         if info_trigger['recurring_event']:
             timeIntervalFrequency = info_trigger['timeIntervalFrequency']
             seconds = self.time_converter[timeIntervalFrequency] / int(info_trigger['frequency'])
-            self.scheduler.add_job(id=id_event, func=self.actions[action], trigger='interval', seconds=seconds)
+            args = self.get_necessary_arguments(info_trigger, action)
+            self.scheduler.add_job(id=id_event, func=self.actions[action], args=args, trigger='interval', seconds=seconds)
         else:
             date_event = info_trigger['date_event']
             self.scheduler.add_job(id=id_event, func=self.actions[action], trigger='date', run_date=date_event, timezone='UTC')
+
+    def get_necessary_arguments(self, trigger, action):
+        args_action = {
+            'generateReport': trigger['idCamera'],
+            # TODO: дописать аргументы для остальных действий
+            # 'collectStatisticsCameras': self.__collect_camera_statistics,
+            # 'collectStatisticsServer': self.__collect_server_statistics,
+            # 'checkingSystem': self.__checking_system,
+            # 'notify': self.__notification
+            }
+        return tuple(args_action[action])
 
     def get_tasks(self):
         # TODO: получение списка событий из БД
@@ -55,9 +68,11 @@ class Scheduler():
         # TODO: Изменить триггер (Возможно пока не делать)
         pass
 
-    def __generate_report(self,):
-        # Сформировать отчет (по одной камере)
-        pass
+    def __generate_report(self, idCamera):
+        """
+        Сформировать отчет по одной камере
+        """
+        requests.get('http://data_service_sm:3000/generateReport', json={'idCamera': idCamera})
 
     def __collect_camera_statistics(self,):
         # Собрать статистику с камер

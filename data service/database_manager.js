@@ -84,7 +84,6 @@ async function saveRecord (msg) {
     type_event = type_event.substring(0, type_event.length - 1);
     const incidents = await pool.query(`SELECT * FROM notifications WHERE camera_data = $1 AND NOT report_compiled;`, [camera_data]);
     const numberMatches = incidents.rowCount;
-    console.log(numberMatches);
 
     let incidentId;
     let type_action_report;
@@ -98,8 +97,9 @@ async function saveRecord (msg) {
         incidentId = db_res.rows[0].incident_id;
         type_action_report = 'create';
     }
-    const dutyId = 1; // FIXME: изменить на залогиненного пользователя!
+    const dutyId = (await pool.query("SELECT user_id FROM users WHERE role = 'system';")).rows[0].user_id;
     const report = {
+        'event_based': false,
         'number_incident': incidentId,
         'datetime': datetime,
         'duty': dutyId,
@@ -108,8 +108,9 @@ async function saveRecord (msg) {
         'consequences': '',
         'conclusion': ''
     };
-    // if (type_action_report === 'update') updateReport(report);
-    // else addReport(report, camera_data);
+    if (type_action_report === 'update') updateReport(report);
+    else addReport(report, camera_data);
+    return incidentId;
 }
 
 function registerCamera(request, response) {
@@ -121,12 +122,13 @@ function registerCamera(request, response) {
 async function infoCamera(request, response) {
     const searchParameter = request.body.camera === 'all' ? null : request.body.camera;
     const cameraObjects = await pool.query(`
-                                            SELECT name_camera, url_address, status, longitude, latitude, address
+                                            SELECT camera_id, name_camera, url_address, status, longitude, latitude, address
                                             FROM cameras as c
                                             JOIN location_cameras as l ON c.camera_location = l.location_id
                                             WHERE (c.name_camera = $1 OR $1 IS NULL);`,
                                             [searchParameter]);
     const cameras = cameraObjects.rows.map(row => ({
+        id: row.camera_id,
         name: row.name_camera,
         url: row.url_address,
         status: row.status ? 'Работает' : 'Не работает',
@@ -149,6 +151,7 @@ async function getListSources() {
 
 async function addEventTrigger(request, response) {
     const trigger = request.body;
+    const idCamera = trigger['idCamera'];
     const title = trigger['title'];
     const description = trigger['description'];
     const recurring_event = trigger['recurring_event'] === 'True';
@@ -160,6 +163,7 @@ async function addEventTrigger(request, response) {
     const timeIntervalDuration = trigger['timeIntervalDuration'];
     const action = trigger['action'];
     const resAddTrigger = await pool.query(`INSERT INTO triggers (
+        idCamera,
         title,
         description,
         recurring_event,
@@ -169,8 +173,9 @@ async function addEventTrigger(request, response) {
         duration,
         time_interval_duration,
         action
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING trigger_id;`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING trigger_id;`,
         [
+            idCamera,
             title,
             description,
             recurring_event,
@@ -182,7 +187,6 @@ async function addEventTrigger(request, response) {
             action
         ]);
     const id_trigger = resAddTrigger.rows[0].trigger_id;
-    console.log(`Получили id триггера: ${id_trigger}`);
     response.status(201).json({'id_event': id_trigger});
 }
 
@@ -190,6 +194,7 @@ async function getEventTriggers(request, response) {
     const triggerObjects = await pool.query('SELECT * FROM triggers');
     const triggers = triggerObjects.rows.map(row => ({
         id_trigger: row.trigger_id,
+        idCamera: row.idCamera,
         title: row.title,
         description: row.description,
         recurring_event: row.recurring_event,
@@ -232,8 +237,8 @@ async function recordSearch(name_camera = null, dateTime = null) {
 }
 
 async function addReport(report, idCamera) {
-    // TODO: добавление отчета не обязательно должно обновлять запись с уведомлением!
     pool.query(`INSERT INTO reports (
+        event_based,
         number_incident,
         datetime,
         duty,
@@ -241,8 +246,9 @@ async function addReport(report, idCamera) {
         measures_taken,
         consequences,
         conclusion)
-        VALUES ($1, $2, $3, $4, $5, $6, $7);`,
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
         [
+            report['event_based'],
             report['number_incident'],
             report['datetime'],
             report['duty'],
@@ -251,16 +257,63 @@ async function addReport(report, idCamera) {
             report['consequences'],
             report['conclusion']
         ]);
-    await pool.query(`UPDATE notifications
-                      SET report_compiled = TRUE
-                      WHERE camera_data = $1 AND NOT report_compiled;`,
-                      [idCamera]);
+    const roleUser = (await pool.query("SELECT role FROM users WHERE user_id = $1;", [report['duty']])).rows[0].role;
+    if (roleUser.toLowerCase() !== 'system')
+        await pool.query(`UPDATE notifications
+                        SET report_compiled = TRUE
+                        WHERE camera_data = $1 AND NOT report_compiled;`,
+                        [idCamera]);
+}
+
+async function generateReport(idCamera) {
+    /// Отвечает непосредственно за заполнение некоторых полей отчета и вызывает функцию addReport
+    const result = await pool.query("SELECT incident_id, datetime, type_event, report_compiled FROM notifications WHERE camera_data = $1 ORDER BY datetime DESC LIMIT 1;", [idCamera]);
+    const count_notifi = result.rowCount;
+    const info_last_notification = result.rows[0];
+    let information_incidents = '';
+    let number_incident = -1;
+    let datetime = new Date().toISOString().replaceAll(/[A-Z]/g, ' ');
+    if (Number(count_notifi) === 0) {
+        information_incidents = `За прошедшее время не поступили уведомления о возможных признаках возгорания.`;
+        const notification = {
+            'camera_data': idCamera,
+            'datetime': datetime,
+            'events': {'Camera_event': 'Был сформирован отчет на основании событийного триггера.'},
+            'Image': ''
+        };
+        number_incident = await saveRecord(JSON.stringify(notification));
+    }
+    else {
+        const notification_status = info_last_notification.report_compiled === 't' ? 'было обработано' : 'еще не было обработано';
+        information_incidents = `За прошедшее время поступило уведомление о возможных признаках возгорания.
+        Были распознаны следующие признаки: ${info_last_notification.type_event}.\n
+        Время оповещения: ${info_last_notification.datetime}.\n
+        При этом данное событие ${notification_status} диспетчером.`;
+        number_incident = info_last_notification.incident_id;
+        datetime = datetime;
+    }
+    const dutyId = (await pool.query("SELECT user_id FROM users WHERE role = 'system';")).rows[0].user_id;
+    const report = {
+        'event_based': true,
+        'number_incident': number_incident,
+        'datetime': datetime,
+        'duty': dutyId,
+        'description': `Данный отчет был автоматически создан системой,
+                        в результате срабатывания событийного триггера.
+                        ${information_incidents}`,
+        'measures_taken': '',
+        'consequences': '',
+        'conclusion': ''
+    };
+    await addReport(report, Number(idCamera));
+    // if (Number(count_notifi) === 0) await addReport(report, Number(idCamera));
+    // else await updateReport(report);
 }
 
 async function updateReport(newReport) {
     await pool.query(`UPDATE reports
     SET datetime = $1, description = $2, measures_taken = $3, consequences = $4, conclusion = $5
-    WHERE number_incident = $6;`,
+    WHERE number_incident = $6 AND event_based IS NOT TRUE`,
     [newReport['datetime'], newReport['description'], newReport['measures_taken'],
     newReport['consequences'], newReport['conclusion'], newReport['number_incident']]);
 }
@@ -300,4 +353,5 @@ module.exports = {
     infoCamera,
     getEventTriggers,
     addEventTrigger,
+    generateReport,
 }

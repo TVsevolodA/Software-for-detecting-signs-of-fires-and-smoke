@@ -154,7 +154,7 @@ async function addEventTrigger(request, response) {
     const idCamera = trigger['idCamera'];
     const title = trigger['title'];
     const description = trigger['description'];
-    const recurring_event = trigger['recurring_event'] === 'True';
+    const recurring_event = trigger['recurring_event'] === 't' ? true : false;
     const dateTrigger = trigger['date_event'];
     const date_event = (dateTrigger === null || dateTrigger.length === 0) ? null : dateTrigger;
     const frequency = Number(trigger['frequency']);
@@ -191,13 +191,13 @@ async function addEventTrigger(request, response) {
 }
 
 async function getEventTriggers(request, response) {
-    const triggerObjects = await pool.query('SELECT * FROM triggers');
+    const triggerObjects = await pool.query('SELECT * FROM triggers;');
     const triggers = triggerObjects.rows.map(row => ({
         id_trigger: row.trigger_id,
-        idCamera: row.idCamera,
+        idCamera: String(row.idcamera),
         title: row.title,
         description: row.description,
-        recurring_event: row.recurring_event,
+        recurring_event: row.recurring_event === false ? 'f' : 't',
         date_event: row.date_event,
         frequency: row.frequency,
         timeIntervalFrequency: row.time_interval_frequency,
@@ -267,13 +267,13 @@ async function addReport(report, idCamera) {
 
 async function generateReport(idCamera) {
     /// Отвечает непосредственно за заполнение некоторых полей отчета и вызывает функцию addReport
-    const result = await pool.query("SELECT incident_id, datetime, type_event, report_compiled FROM notifications WHERE camera_data = $1 ORDER BY datetime DESC LIMIT 1;", [idCamera]);
+    const result = await pool.query("SELECT * FROM notifications WHERE camera_data = $1 ORDER BY datetime DESC LIMIT 1;", [idCamera]);
     const count_notifi = result.rowCount;
     const info_last_notification = result.rows[0];
     let information_incidents = '';
     let number_incident = -1;
     let datetime = new Date().toISOString().replaceAll(/[A-Z]/g, ' ');
-    if (Number(count_notifi) === 0) {
+    if (Number(count_notifi) === 0 || info_last_notification.captured_image.length === 0) {
         information_incidents = `За прошедшее время не поступили уведомления о возможных признаках возгорания.`;
         const notification = {
             'camera_data': idCamera,
@@ -305,9 +305,9 @@ async function generateReport(idCamera) {
         'consequences': '',
         'conclusion': ''
     };
-    await addReport(report, Number(idCamera));
-    // if (Number(count_notifi) === 0) await addReport(report, Number(idCamera));
-    // else await updateReport(report);
+    // await addReport(report, Number(idCamera));
+    if (Number(count_notifi) === 0) await updateReport(report);
+    else await addReport(report, Number(idCamera));
 }
 
 async function updateReport(newReport) {

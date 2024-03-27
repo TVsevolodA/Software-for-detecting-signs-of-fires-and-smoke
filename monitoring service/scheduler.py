@@ -31,19 +31,18 @@ class Scheduler():
         if not availability_in_db:
             req = requests.get('http://data_service_sm:3000/addEventTrigger', json=info_trigger)
             dict_req = json.loads(req.text)
-            print(f'Получили ответ о DS: {dict_req}')
             id_event = str(dict_req['id_event'])
         else:
             id_event = str(info_trigger['id_trigger'])
         action = info_trigger['action']
-        if info_trigger['recurring_event']:
-            timeIntervalFrequency = info_trigger['timeIntervalFrequency']
-            seconds = self.time_converter[timeIntervalFrequency] / int(info_trigger['frequency'])
-            args = self.get_necessary_arguments(info_trigger, action)
-            self.scheduler.add_job(id=id_event, func=self.actions[action], args=args, trigger='interval', seconds=seconds)
+        args = self.get_necessary_arguments(info_trigger, action)
+        if info_trigger['recurring_event'] == 't':
+          timeIntervalFrequency = info_trigger['timeIntervalFrequency']
+          seconds = self.time_converter[timeIntervalFrequency] / int(info_trigger['frequency'])
+          self.scheduler.add_job(id=id_event, func=self.actions[action], args=args, trigger='interval', seconds=seconds)
         else:
-            date_event = info_trigger['date_event']
-            self.scheduler.add_job(id=id_event, func=self.actions[action], trigger='date', run_date=date_event, timezone='UTC')
+          date_event = info_trigger['date_event']
+          self.scheduler.add_job(id=id_event, func=self.actions[action], args=args, trigger='date', run_date=date_event, timezone='UTC')
 
     def get_necessary_arguments(self, trigger, action):
         args_action = {

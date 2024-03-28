@@ -50,6 +50,12 @@ app.get('/generateReport', async (request, response) => {
   response.json({'status': 'Отчет успешно создан'});
 });
 
+app.get('/generateReports', async (request, response) => {
+  const idCamera = request.body['idCamera'];
+  await databaseManager.generateReports(idCamera);
+  response.json({'status': 'Отчет успешно создан'});
+});
+
 // TODO: Рабочий вариант! Потом доработать до полноценноценной страницы просмотра данных с БД!
 app.get('/getFrame', (request, response) => {
   let message = databaseManager.getRecord();

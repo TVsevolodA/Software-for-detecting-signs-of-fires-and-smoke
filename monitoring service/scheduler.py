@@ -47,8 +47,8 @@ class Scheduler():
     def get_necessary_arguments(self, trigger, action):
         args_action = {
             'generateReport': trigger['idCamera'],
+            'collectStatisticsCameras': trigger['idCamera'],
             # TODO: дописать аргументы для остальных действий
-            # 'collectStatisticsCameras': self.__collect_camera_statistics,
             # 'collectStatisticsServer': self.__collect_server_statistics,
             # 'checkingSystem': self.__checking_system,
             # 'notify': self.__notification
@@ -73,9 +73,11 @@ class Scheduler():
         """
         requests.get('http://data_service_sm:3000/generateReport', json={'idCamera': idCamera})
 
-    def __collect_camera_statistics(self,):
-        # Собрать статистику с камер
-        pass
+    def __collect_camera_statistics(self, idCamera):
+        """
+        Собрать статистику с камер
+        """
+        requests.get('http://data_service_sm:3000/generateReports', json={'idCamera': idCamera})
 
     def __collect_server_statistics(self,):
         # Собрать статистику с сервера

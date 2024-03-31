@@ -1,12 +1,13 @@
 <html>
   <head>
+    <meta charset="utf-8">
     <title>scheduleActionIndividual</title>
     <!-- BootStrap -->
     <link href=" https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet" >
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        body, .horizontalCenteringBlocks, #frequencySelectionBlock {
+        main, .horizontalCenteringBlocks, #frequencySelectionBlock {
             display: flex;
         }
         body, .horizontalCenteringBlocks {
@@ -16,8 +17,10 @@
         }
         main {
             padding: 2% 5%;
+            justify-content: center;
+            width: 100%;
         }
-        main, #frequencySelectionBlock {
+        #frequencySelectionBlock {
             width: 50%;
         }
         input::-webkit-outer-spin-button,
@@ -27,6 +30,25 @@
     </style>
   </head>
   <body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Главная</a></li>
+                <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
+                <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
+                <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Роли</a></li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#">
+                        <i class="bi bi-person-circle h1"></i>
+                    </a>
+                </li>
+            </ul>
+            </div>
+        </nav>
+    </header>
     <main>
         <form action="{{ url_for('setAction') }}" method="post">
             <div class="horizontalCenteringBlocks">
@@ -36,12 +58,12 @@
             <div id="basicInformationBlock">
                 <div class="mb-3">
                     <label for="title" class="form-label">Название</label>
-                    <input type="text" id="title" name="title" required="true" placeholder="Наименование действия" class="form-control">
+                    <textarea type="text" id="title" name="title" required="true" rows="3" placeholder="Наименование действия" class="form-control"></textarea>
                     <div class="invalid-feedback">Необходимо указать название</div>
                 </div>
                 <div class="mb-3">
                     <label for="description" class="form-label">Описание</label>
-                    <input type="text" id="description" name="description" required="true" placeholder="Назначение действия" class="form-control">
+                    <textarea type="text" id="description" name="description" required="true" rows="3" placeholder="Назначение действия" class="form-control"></textarea>
                 </div>
             </div>
             <div id="actionSelectionBlock">

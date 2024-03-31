@@ -1,16 +1,130 @@
 <html>
   <head>
+    <meta charset="utf-8">
     <title>AddCamera</title>
+    <!-- BootStrap -->
+    <link href=" https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet" >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+      main {
+        flex-grow: 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      body {
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      #submitBlock {
+        text-align: center;
+      }
+      #pageTitle {
+        margin-bottom: 40px;
+      }
+      #banner {
+        width: 35%;
+        background: #f5fffa;
+        display: none;
+        position: absolute;
+        text-align: center;
+      }
+      #contextMessage {
+        padding: 5px 10px;
+        font-size: 20px;
+        font-weight: 500;
+      }
+      #iconMessage:hover { -webkit-text-stroke: 1px; }
+    </style>
   </head>
   <body>
-    <form action="{{ url_for('addedCamera') }}" method="post">
-        <div>
-            <label for="url">URL-адрес</label>
-            <input type="url" id="url" name="url" required="true">
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Главная</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Роли</a></li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">
+                <i class="bi bi-person-circle h1"></i>
+              </a>
+            </li>
+          </ul>
         </div>
-        <div>
-            <input type="submit" value="Добавить">
+      </nav>
+    </header>
+    <main>
+
+      <div id="banner" class="card">
+        <div class="mb-3">
+          <div class="card-img-top mb-3"><i id="iconMessage"></i></div>
+          <div id="contextMessage" class="card-text"></div>
         </div>
-    </form>
+        <div class="mb-3"><input type="button" id="actionButton" class="btn btn-primary"></div>
+      </div>
+
+      <form> <!--  action="url_for('addedCamera')" method="post"  -->
+        <div id="pageTitle">
+          <h3>Добавить новую камеру в систему</h3>
+        </div>
+        <div class="mb-3">
+            <label for="url" class="form-label">URL-адрес</label>
+            <input type="url" class="form-control" id="url" name="url" placeholder="http://host:port/stream" required="true">
+        </div>
+        <div class="mb-3" id="submitBlock">
+            <input type="submit" class="btn btn-primary" value="Добавить">
+        </div>
+      </form>
+    </main>
+    <!-- BootStrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script>
+      function createMessage(icons, resServer, titleButton) {
+        let icon = document.getElementById('iconMessage');
+        icon.className = `bi ${icons} h3`;
+
+        let message = document.getElementById('contextMessage');
+        message.innerHTML = resServer.res;
+
+        let actionButton = document.getElementById('actionButton');
+        actionButton.value = titleButton;
+        actionButton.addEventListener("click", function(e) {
+          if (resServer.statusCode === 200) {
+            window.location.href = "{{ url_for('index') }}";
+          }
+          else {
+            document.getElementById('banner').style.display = 'none';
+          }
+        }, false);
+      }
+
+      document.getElementsByTagName('form')[0].addEventListener('submit', function(e) {
+        e.preventDefault();
+        const newUrlCamera = document.getElementsByName('url')[0].value;
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', "{{ url_for('addedCamera') }}");
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+        xhr.responseType = 'json';
+        xhr.send(JSON.stringify({'url': newUrlCamera}));
+        xhr.onload = () => {
+          let responseObj = xhr.response;
+          document.getElementById('banner').style.display = 'block';
+          if (responseObj.statusCode === 200) {
+            createMessage('bi-check2-circle text-success', responseObj, 'Вернуться на главную');
+          }
+          else {
+            createMessage('bi-x-circle text-danger', responseObj, 'Повторить попытку');
+          }
+        };
+        return false;
+      });
+    </script>
   </body>
 </html>

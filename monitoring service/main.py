@@ -1,5 +1,5 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, render_template, Response, request, redirect, url_for
+from flask import Flask, render_template, Response, request, redirect, url_for, jsonify
 from flask_socketio import SocketIO
 from threading import Lock
 from camera_builder import camerasBuilder
@@ -21,7 +21,7 @@ socketio = SocketIO(app, async_mode='threading')
 
 @app.route('/')
 def index():
-    return render_template('index.html', cameraСounter = len(camerasBuilder.cameras))
+    return render_template('index.html', cameras = camerasBuilder.cameras)
 
 def gen(id_camera_web):
     while True:
@@ -47,11 +47,14 @@ def addCamera():
 
 @app.route('/addedCamera', methods=["POST"])
 def addedCamera():
-    URL = request.form['url']
+    jsonObject = request.json
+    URL = jsonObject['url']
+    # URL = request.form['url']
 
     test = requests.get(URL + '/hls/xxx.m3u8')
     if test.status_code == 404:
-        return f'<h1>Ошибка! Трансляция недоступна или указан неверный URl</h1>'
+        return jsonify({'statusCode': 400, 'res': 'Ошибка! Трансляция недоступна или указан неверный URl'})
+        # return f'<h1>Ошибка! Трансляция недоступна или указан неверный URl</h1>'
 
     json_url = '{"url": "' + URL + '"}'
     req = requests.post('http://data_service_sm:3000/registerCamera', json=json.loads(json_url))
@@ -60,10 +63,12 @@ def addedCamera():
         DATA = dict_req['data']
         CAMERA_ID = DATA['index']
         camerasBuilder.addCameraStream(DATA)
-        return f'<h1>Успешно добавлена новая камера с id = {CAMERA_ID}!!!</h1>'
+        return jsonify({'statusCode': 200, 'res': f'Успешно добавлена новая камера с id = {CAMERA_ID}'})
+        # return f'<h1>Успешно добавлена новая камера с id = {CAMERA_ID}!!!</h1>'
     else:
         res = dict_req['result']
-        return f'<h1>Ошибка! {res}</h1>'
+        return jsonify({'statusCode': 400, 'res': f'Ошибка! {res}'})
+        # return f'<h1>Ошибка! {res}</h1>'
 
 @app.route('/infoСamera', methods=["GET"], defaults={'camera': 'all', 'idCamera': '-1', 'idStream': '-1'})
 @app.route('/infoСamera/cameras/<camera>/<idCamera>/<idStream>')

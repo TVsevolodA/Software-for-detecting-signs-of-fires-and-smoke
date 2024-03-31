@@ -121,7 +121,7 @@ async function getListSources() {
 async function addEventTrigger(request, response) {
     const trigger = request.body;
     let triggerObject = Trigger.withoutId(pool, trigger);
-    const id_trigger = triggerObject.insertWithReturnId();
+    const id_trigger = await triggerObject.insertWithReturnId();
     response.status(201).json({'id_event': id_trigger});
 }
 

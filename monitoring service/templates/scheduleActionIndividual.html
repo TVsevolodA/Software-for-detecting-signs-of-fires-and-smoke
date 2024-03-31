@@ -32,64 +32,16 @@
             <div class="horizontalCenteringBlocks">
                 <h3>Создать новое действие</h3>
             </div>
-            <input type="text" id="idCamera" name="idCamera" value="{{idCamera}}">
+            <input type="text" id="idCamera" name="idCamera" value="{{idCamera}}" style="display: none;">
             <div id="basicInformationBlock">
                 <div class="mb-3">
                     <label for="title" class="form-label">Название</label>
                     <input type="text" id="title" name="title" required="true" placeholder="Наименование действия" class="form-control">
+                    <div class="invalid-feedback">Необходимо указать название</div>
                 </div>
                 <div class="mb-3">
                     <label for="description" class="form-label">Описание</label>
                     <input type="text" id="description" name="description" required="true" placeholder="Назначение действия" class="form-control">
-                </div>
-            </div>
-            <div class="form-check">
-                <input type="text" id="recurring_event" name="recurring_event" style="display: none;">
-                <input class="form-check-input" type="checkbox" id="checkbox_recurring_event">
-                <label class="form-check-label" for="checkbox_recurring_event">
-                  Создать повторяющееся событие
-                </label>
-            </div>
-            <div class="mb-3">
-                <input type="text" id="date_event" name="date_event" style="display: none;">
-                <label class="form-label" for="date_event_object">
-                    Время срабатывания
-                </label>
-                <input class="form-control" type="datetime-local" id="date_event_object" name="date_event_object">
-            </div>
-            <!-- <input type="text" id="recurring_event" name="recurring_event" value="True"> -->
-            <!-- <input type="datetime" id="date_event" name="date_event" value=""> -->
-            <!-- TODO: добавить поле recurring_event BOOL (повторяющееся событие), date_event DATETIME (дата события - 4 (из-за времени в контейнере))- -->
-            <div id="periodicityBlock">
-                <div class="mb-3">
-                    <label for="description" class="form-label">Периодичность</label>
-                    <div class="input-group mb-3">
-                        <input type="number" id="frequency" name="frequency" required="true" min="1" class="form-control" style="flex: 2;">
-                        <div id="frequencySelectionBlock">
-                            <label class="input-group-text" for="timeIntervalFrequency">в</label>
-                            <select id="timeIntervalFrequency" name="timeIntervalFrequency" class="form-select">
-                                <option value="second" selected>секунду</option>
-                                <option value="minute">минуту</option>
-                                <option value="hour">час</option>
-                                <option value="day">день</option>
-                                <option value="week">неделю</option>
-                                <option value="month">месяц</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">Продолжительность</label>
-                    <div class="input-group mb-3">
-                        <input type="number" id="duration" name="duration" required="true" min="1" class="form-control">
-                        <div style="width: 50%;">
-                            <select id="timeIntervaldDuration" name="timeIntervalDuration" class="form-select">
-                                <option value="second" selected>секунду</option>
-                                <option value="minute">минуту</option>
-                                <option value="hour">час</option>
-                            </select>
-                        </div>
-                    </div>
                 </div>
             </div>
             <div id="actionSelectionBlock">
@@ -104,6 +56,39 @@
                     </select>
                 </div>
             </div>
+            <div class="form-check">
+                <input type="text" id="recurring_event" name="recurring_event" style="display: none;">
+                <input class="form-check-input" type="checkbox" id="checkbox_recurring_event" onclick="changeFields(this)">
+                <label class="form-check-label" for="checkbox_recurring_event">
+                  Создать повторяющееся событие
+                </label>
+            </div>
+            <div class="mb-3" id="datetimeEventBlock">
+                <input type="text" id="date_event" name="date_event" style="display: none;">
+                <label class="form-label" for="date_event_object">
+                    Время срабатывания
+                </label>
+                <input class="form-control" type="datetime-local" id="date_event_object" name="date_event_object" required>
+                <div class="invalid-feedback">Необходимо указать время</div>
+            </div>
+            <div class="mb-3" id="periodicityBlock">
+                <label for="description" class="form-label">Периодичность</label>
+                <div class="input-group mb-3">
+                    <input type="number" id="frequency" name="frequency" min="1" class="form-control" style="flex: 2;" placeholder="1" required>
+                    <div id="frequencySelectionBlock">
+                        <label class="input-group-text" for="timeIntervalFrequency">раз в</label>
+                        <select id="timeIntervalFrequency" name="timeIntervalFrequency" class="form-select">
+                            <option value="second" selected>секунду</option>
+                            <option value="minute">минуту</option>
+                            <option value="hour">час</option>
+                            <option value="day">день</option>
+                            <option value="week">неделю</option>
+                            <option value="month">месяц</option>
+                        </select>
+                        <div class="invalid-feedback">Необходимо указать период</div>
+                    </div>
+                </div>
+            </div>
             <div class="horizontalCenteringBlocks">
                 <input class="btn btn-primary" type="submit" value="Добавить">
             </div>
@@ -112,18 +97,54 @@
     <!-- BootStrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script>
+        let periodicityBlock = document.getElementById('periodicityBlock');
+        let datetimeEventBlock = document.getElementById('datetimeEventBlock');
+        let date_event_object = document.getElementById('date_event_object');
+        let frequency = document.getElementById('frequency');
+        periodicityBlock.style.display = 'none';
+        date_event_object.required = true;
+        frequency.required = false;
+
+        function changeFields(checkbox) {
+            if (checkbox.checked) {
+                periodicityBlock.style.display = 'block';
+                datetimeEventBlock.style.display = 'none';
+                date_event_object.required = false;
+                frequency.required = true;
+            }
+            else {
+                periodicityBlock.style.display = 'none';
+                datetimeEventBlock.style.display = 'block';
+                date_event_object.required = true;
+                frequency.required = false;
+            }
+        }
+
         function convertingFormData(event) {
             event.preventDefault();
-            const datetimeObject = document.getElementById('date_event_object').value;
-            document.getElementById('date_event').value = datetimeObject.replaceAll(/[A-Z]/g, ' ').trim() + ':00';
 
-            const checkbox = document.getElementById('checkbox_recurring_event');
-            document.getElementById('recurring_event').value = checkbox.checked ? 't' : 'f';
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            const checkbox = document.getElementById('checkbox_recurring_event').checked;
+            document.getElementById('recurring_event').value = checkbox ? 't' : 'f';
 
-            document.getElementsByTagName("form")[0].submit();
-        };
+            if (checkbox) {
+                date_event_object.value = null;
+            }
+            else {
+                frequency.value = null;
+                const datetimeObject = date_event_object.value;
+                document.getElementById('date_event').value = datetimeObject.replaceAll(/[A-Z]/g, ' ').trim() + ':00';
+            }
 
-        const form = document.getElementsByTagName('form')[0];
+            form.classList.add("was-validated");
+            form.submit();
+        }
+
+        let form = document.getElementsByTagName('form')[0];
         form.addEventListener('submit', convertingFormData);
     </script>
   </body>

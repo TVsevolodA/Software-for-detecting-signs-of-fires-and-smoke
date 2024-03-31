@@ -51,10 +51,10 @@ CREATE TABLE triggers (
   description           VARCHAR (1000) NOT NULL,
   recurring_event       BOOLEAN DEFAULT TRUE,
   date_event            TIMESTAMP NULL,
-  frequency             INTEGER,
-  time_interval_frequency VARCHAR (100) NOT NULL,
-  duration              INTEGER,
-  time_interval_duration VARCHAR (100) NOT NULL,
+  frequency             INTEGER NULL,
+  time_interval_frequency VARCHAR (100) NULL,
+  -- duration              INTEGER,
+  -- time_interval_duration VARCHAR (100) NOT NULL,
   action                VARCHAR (100) NOT NULL
 );
 

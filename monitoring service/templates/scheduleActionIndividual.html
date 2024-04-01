@@ -27,6 +27,9 @@
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
         }
+        form {
+            width: 35%;
+        }
     </style>
   </head>
   <body>
@@ -50,7 +53,7 @@
         </nav>
     </header>
     <main>
-        <form action="{{ url_for('setAction') }}" method="post">
+        <form action="{{ url_for('setAction') }}" method="post" class="g-3 needs-validation" novalidate>
             <div class="horizontalCenteringBlocks">
                 <h3>Создать новое действие</h3>
             </div>
@@ -59,11 +62,12 @@
                 <div class="mb-3">
                     <label for="title" class="form-label">Название</label>
                     <textarea type="text" id="title" name="title" required="true" rows="3" placeholder="Наименование действия" class="form-control"></textarea>
-                    <div class="invalid-feedback">Необходимо указать название</div>
+                    <div class="invalid-feedback">Пожалуйста, укажите название для события.</div>
                 </div>
                 <div class="mb-3">
                     <label for="description" class="form-label">Описание</label>
                     <textarea type="text" id="description" name="description" required="true" rows="3" placeholder="Назначение действия" class="form-control"></textarea>
+                    <div class="invalid-feedback">Пожалуйста, добавьте описание для события.</div>
                 </div>
             </div>
             <div id="actionSelectionBlock">
@@ -91,7 +95,7 @@
                     Время срабатывания
                 </label>
                 <input class="form-control" type="datetime-local" id="date_event_object" name="date_event_object" required>
-                <div class="invalid-feedback">Необходимо указать время</div>
+                <div class="invalid-feedback">Пожалуйста, укажите дату и время события.</div>
             </div>
             <div class="mb-3" id="periodicityBlock">
                 <label for="description" class="form-label">Периодичность</label>
@@ -107,8 +111,8 @@
                             <option value="week">неделю</option>
                             <option value="month">месяц</option>
                         </select>
-                        <div class="invalid-feedback">Необходимо указать период</div>
                     </div>
+                    <div class="invalid-feedback">Пожалуйста, период срабатывания события.</div>
                 </div>
             </div>
             <div class="horizontalCenteringBlocks">
@@ -143,8 +147,6 @@
         }
 
         function convertingFormData(event) {
-            event.preventDefault();
-
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -155,15 +157,20 @@
 
             if (checkbox) {
                 date_event_object.value = null;
+                if (frequency.value === undefined) {
+                    frequency.setCustomValidity('Пожалуйста, период срабатывания события.');
+                }
             }
             else {
                 frequency.value = null;
+                if (date_event_object.value === undefined) {
+                    date_event_object.setCustomValidity('Пожалуйста, укажите дату и время события.');
+                }
                 const datetimeObject = date_event_object.value;
                 document.getElementById('date_event').value = datetimeObject.replaceAll(/[A-Z]/g, ' ').trim() + ':00';
             }
 
-            form.classList.add("was-validated");
-            form.submit();
+            form.classList.add('was-validated');
         }
 
         let form = document.getElementsByTagName('form')[0];

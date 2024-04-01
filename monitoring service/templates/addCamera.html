@@ -70,13 +70,14 @@
         <div class="mb-3"><input type="button" id="actionButton" class="btn btn-primary"></div>
       </div>
 
-      <form> <!--  action="url_for('addedCamera')" method="post"  -->
+      <form class="g-3 needs-validation" novalidate>
         <div id="pageTitle">
           <h3>Добавить новую камеру в систему</h3>
         </div>
         <div class="mb-3">
             <label for="url" class="form-label">URL-адрес</label>
-            <input type="url" class="form-control" id="url" name="url" placeholder="http://host:port/stream" required="true">
+            <input type="url" class="form-control" id="url" name="url" placeholder="http://host:port/stream" required>
+            <div class="invalid-feedback">Пожалуйста, укажите действительный URL-адрес.</div>
         </div>
         <div class="mb-3" id="submitBlock">
             <input type="submit" class="btn btn-primary" value="Добавить">
@@ -105,26 +106,38 @@
         }, false);
       }
 
-      document.getElementsByTagName('form')[0].addEventListener('submit', function(e) {
-        e.preventDefault();
-        const newUrlCamera = document.getElementsByName('url')[0].value;
-        let xhr = new XMLHttpRequest();
-        xhr.open('POST', "{{ url_for('addedCamera') }}");
-        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-        xhr.responseType = 'json';
-        xhr.send(JSON.stringify({'url': newUrlCamera}));
-        xhr.onload = () => {
-          let responseObj = xhr.response;
-          document.getElementById('banner').style.display = 'block';
-          if (responseObj.statusCode === 200) {
-            createMessage('bi-check2-circle text-success', responseObj, 'Вернуться на главную');
-          }
-          else {
-            createMessage('bi-x-circle text-danger', responseObj, 'Повторить попытку');
-          }
-        };
-        return false;
-      });
+      (function () {
+        'use strict'
+        let forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!form.checkValidity()) {
+              form.classList.add('was-validated');
+            }
+            else {
+              const newUrlCamera = document.getElementsByName('url')[0].value;
+              let xhr = new XMLHttpRequest();
+              xhr.open('POST', "{{ url_for('addedCamera') }}");
+              xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+              xhr.responseType = 'json';
+              xhr.send(JSON.stringify({'url': newUrlCamera}));
+              xhr.onload = () => {
+                let responseObj = xhr.response;
+                document.getElementById('banner').style.display = 'block';
+                if (responseObj.statusCode === 200) {
+                  createMessage('bi-check2-circle text-success', responseObj, 'Вернуться на главную');
+                }
+                else {
+                  createMessage('bi-x-circle text-danger', responseObj, 'Повторить попытку');
+                }
+              };
+            }
+          }, false);
+        });
+      })();
     </script>
   </body>
 </html>

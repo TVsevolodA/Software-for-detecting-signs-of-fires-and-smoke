@@ -40,6 +40,10 @@ app.get('/getListSources', async (request, response) => {
   response.json(listSources);
 });
 
+app.get('/getUserById', (request, response) => databaseManager.getUserById(request, response));
+app.get('/getUserByLogin', (request, response) => databaseManager.getUserByLogin(request, response));
+app.get('/registerUser', (request, response) => databaseManager.registerUser(request, response));
+
 
 app.get('/getEventTriggers', async (request, response) => await databaseManager.getEventTriggers(request, response));
 app.get('/addEventTrigger', async (request, response) => await databaseManager.addEventTrigger(request, response));

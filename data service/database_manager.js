@@ -74,7 +74,25 @@ function getRecord () {
     return message;
 }
 
-async function saveRecord (msg) {
+async function getUserById(request, response) {
+    const user_id = request.body.user_id;
+    let userObject = User.systemUser(pool);
+    return (await userObject.getUserById(user_id));
+}
+
+async function getUserByLogin(request, response) {
+    const login = request.body.login;
+    let userObject = User.systemUser(pool);
+    return (await userObject.getUserByLogin(login));
+}
+
+async function registerUser(request, response) {
+    const user_json = request.body.user_json;
+    let userObject = User.withoutId(pool, user_json);
+    return (await userObject.insertWithReturnId());
+}
+
+async function saveRecord(msg) {
     // TODO: Для отладки
     message = msg;
 
@@ -248,6 +266,9 @@ async function getReport(name_camera = null, dateTimeBeginning = null, dateTimeE
 }
 
 module.exports = {
+    getUserById,
+    getUserByLogin,
+    registerUser,
     saveRecord,
     getRecord,
     registerCamera,

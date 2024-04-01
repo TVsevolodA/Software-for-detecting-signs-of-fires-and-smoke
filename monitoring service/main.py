@@ -1,11 +1,14 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, render_template, Response, request, redirect, url_for, jsonify
+from flask import Flask, render_template, Response, request, redirect, url_for, jsonify, flash
 from flask_socketio import SocketIO
 from threading import Lock
 from camera_builder import camerasBuilder
 from scheduler import Scheduler
 import json
 import requests
+
+# from flask_login import LoginManager, login_user, login_required, logout_user
+# from user import User
 
 scheduler = BackgroundScheduler()
 action_planner = Scheduler(scheduler)
@@ -18,6 +21,55 @@ thread = None
 thread_lock = Lock()
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, async_mode='threading')
+# login = LoginManager(app)
+
+
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     login_form = request.form
+#     user_login = login_form['login']
+#     password = login_form['password']
+#     userObject = User(username='', email=user_login, role='dispatcher')
+#     if user_login and password:
+#         user = userObject.get_user_by_login(user_login)
+#         if user and userObject.check_password(password):
+#             login_user(user)
+#             flash('Успешно вошел в систему.')
+#             next = request.args.get('next')
+#             return redirect(next or url_for('index'))
+#         else:
+#             flash('Неверный логин или пароль.')
+#     else:
+#         return render_template('signIn.html', form=login_form)
+
+
+# @app.route('/registration', methods=['GET', 'POST'])
+# def registration():
+#     login_form = request.form
+#     username = login_form['username']
+#     email = login_form['login']
+#     password = login_form['password']
+#     if request.method == 'POST':
+#         new_user = User(username=username, email=email, role='dispatcher')
+#         new_user.set_password(password)
+#         new_user.register_user_in_system()
+#         return redirect(url_for('login'))
+#     return render_template('signUp.html')
+
+
+# @app.route('/logout', methods=['GET', 'POST'])
+# @login_required
+# def logout():
+#     logout_user()
+#     return redirect(url_for('login'))
+
+
+# @app.after_request
+# def redirect_to_signIn(response):
+#     if response.status_code == 401:
+#         return redirect(url_for('login') + '?next=' + request.url)
+#     return response
+
 
 @app.route('/')
 def index():
@@ -51,7 +103,10 @@ def addedCamera():
     URL = jsonObject['url']
     # URL = request.form['url']
 
-    test = requests.get(URL + '/hls/xxx.m3u8')
+    try:
+        test = requests.get(URL + '/hls/xxx.m3u8')
+    except Exception:
+        return jsonify({'statusCode': 400, 'res': f'Произошла ошибка при установке связи с камерой!'})
     if test.status_code == 404:
         return jsonify({'statusCode': 400, 'res': 'Ошибка! Трансляция недоступна или указан неверный URl'})
         # return f'<h1>Ошибка! Трансляция недоступна или указан неверный URl</h1>'

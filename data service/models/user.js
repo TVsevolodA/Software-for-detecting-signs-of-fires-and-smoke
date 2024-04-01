@@ -26,6 +26,11 @@ module.exports= class User{
     }
 
     async insertWithReturnId() {
+        return (await this.pool.query(`
+                                        INSERT INTO users (username, email, password_hash, role)
+                                        VALUES ($1, $2, $3, $4) RETURNING user_id;`,
+                                        [this.username, this.email, this.password_hash, this.role])
+                ).rows[0].user_id;
     }
 
     async getUserRole(duty) {
@@ -34,5 +39,13 @@ module.exports= class User{
 
     async searchSystemUser() {
         return (await this.pool.query("SELECT user_id FROM users WHERE role = 'system';")).rows[0].user_id;
+    }
+
+    async getUserById(user_id) {
+        return (await this.pool.query("SELECT * FROM users WHERE user_id = $1;", [user_id])).rows[0];
+    }
+
+    async getUserByLogin(login) {
+        return (await this.pool.query("SELECT * FROM users WHERE email = $1;", [login])).rows[0];
     }
 }

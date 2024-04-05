@@ -7,8 +7,8 @@ from scheduler import Scheduler
 import json
 import requests
 
-# from flask_login import LoginManager, login_user, login_required, logout_user
-# from user import User
+from flask_login import LoginManager, login_user, login_required, logout_user
+from user import User
 
 scheduler = BackgroundScheduler()
 action_planner = Scheduler(scheduler)
@@ -21,54 +21,61 @@ thread = None
 thread_lock = Lock()
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, async_mode='threading')
-# login = LoginManager(app)
+login = LoginManager(app)
+
+@login.user_loader
+def load_user(user_id):
+    req = requests.get('http://data_service_sm:3000/getUserById', json={'user_id': user_id})
+    return json.loads(req.text)
+
+@app.route('/login', methods=['GET', 'POST'])
+def signIn():
+    if request.method == 'GET':
+        return render_template('signIn.html')
+    elif request.method == 'POST':
+        login_form = request.form
+        user_login = login_form['login']
+        password = login_form['password']
+        userObject = User(username='', email=user_login, role='dispatcher')
+        if user_login and password:
+            user = userObject.get_user_by_login(user_login)
+            if user and userObject.check_password(password):
+                login_user(user)
+                flash('Успешно вошел в систему.')
+                next = request.args.get('next')
+                return redirect(next or url_for('index'))
+            else:
+                flash('Неверный логин или пароль.')
+        return render_template('signIn.html')
 
 
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     login_form = request.form
-#     user_login = login_form['login']
-#     password = login_form['password']
-#     userObject = User(username='', email=user_login, role='dispatcher')
-#     if user_login and password:
-#         user = userObject.get_user_by_login(user_login)
-#         if user and userObject.check_password(password):
-#             login_user(user)
-#             flash('Успешно вошел в систему.')
-#             next = request.args.get('next')
-#             return redirect(next or url_for('index'))
-#         else:
-#             flash('Неверный логин или пароль.')
-#     else:
-#         return render_template('signIn.html', form=login_form)
+@app.route('/registration', methods=['GET', 'POST'])
+def signUp():
+    if request.method == 'POST':
+        login_form = request.form
+        username = login_form['username']
+        email = login_form['login']
+        password = login_form['password']
+        if request.method == 'POST':
+            new_user = User(username=username, email=email, role='dispatcher')
+            new_user.set_password(password)
+            new_user.register_user_in_system()
+            return redirect(url_for('signIn'))
+    return render_template('signUp.html')
 
 
-# @app.route('/registration', methods=['GET', 'POST'])
-# def registration():
-#     login_form = request.form
-#     username = login_form['username']
-#     email = login_form['login']
-#     password = login_form['password']
-#     if request.method == 'POST':
-#         new_user = User(username=username, email=email, role='dispatcher')
-#         new_user.set_password(password)
-#         new_user.register_user_in_system()
-#         return redirect(url_for('login'))
-#     return render_template('signUp.html')
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('signIn'))
 
 
-# @app.route('/logout', methods=['GET', 'POST'])
-# @login_required
-# def logout():
-#     logout_user()
-#     return redirect(url_for('login'))
-
-
-# @app.after_request
-# def redirect_to_signIn(response):
-#     if response.status_code == 401:
-#         return redirect(url_for('login') + '?next=' + request.url)
-#     return response
+@app.after_request
+def redirect_to_signIn(response):
+    if response.status_code == 401:
+        return redirect(url_for('signIn') + '?next=' + request.url)
+    return response
 
 
 @app.route('/')

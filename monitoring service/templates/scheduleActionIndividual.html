@@ -95,7 +95,7 @@
                     Время срабатывания
                 </label>
                 <input class="form-control" type="datetime-local" id="date_event_object" name="date_event_object" required>
-                <div class="invalid-feedback">Пожалуйста, укажите дату и время события.</div>
+                <div class="invalid-feedback" id="warningDateEventObject"></div>
             </div>
             <div class="mb-3" id="periodicityBlock">
                 <label for="description" class="form-label">Периодичность</label>
@@ -163,11 +163,27 @@
             }
             else {
                 frequency.value = null;
-                if (date_event_object.value === undefined) {
+                let userDateTime = new Date(date_event_object.value);
+                let currentDateTime = new Date();
+                if (date_event_object.value === undefined || date_event_object.value === '') {
                     date_event_object.setCustomValidity('Пожалуйста, укажите дату и время события.');
+                    document.getElementById('warningDateEventObject').innerHTML = 'Пожалуйста, укажите дату и время события.';
                 }
-                const datetimeObject = date_event_object.value;
-                document.getElementById('date_event').value = datetimeObject.replaceAll(/[A-Z]/g, ' ').trim() + ':00';
+                else if (currentDateTime > userDateTime) {
+                    date_event_object.setCustomValidity('Дата и время события должны быть больше текущих.');
+                    document.getElementById('warningDateEventObject').innerHTML = 'Дата и время события должны быть больше текущих.';
+                }
+                else {
+                    date_event_object.setCustomValidity('');
+                    const datetimeObject = date_event_object.value;
+                    userDateTime = datetimeObject.replaceAll(/[A-Z]/g, ' ').trim() + ':00';
+                    const regReplaceWatch = / [0-9]{2}:/g;
+                    const userHours = Number(regReplaceWatch.exec(userDateTime)[0].replace(':', '').trim());
+                    let newHours;
+                    if (userHours-4 < 10) newHours = ` 0${userHours-4}:`;
+                    else newHours = ` ${userHours-4}:`;
+                    document.getElementById('date_event').value = userDateTime.replace(regReplaceWatch, newHours);
+                }
             }
 
             form.classList.add('was-validated');

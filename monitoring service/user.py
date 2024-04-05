@@ -1,14 +1,7 @@
 import requests
 from flask import json
-from flask_login import UserMixin, login_manager
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    req = requests.get('http://data_service_sm:3000/getUserById', json={'user_id': user_id})
-    return json.loads(req.text)
-
 
 class User(UserMixin):
     def __init__(self, username, email, role):
@@ -26,13 +19,15 @@ class User(UserMixin):
 
     def get_user_by_login(self, login):
         req = requests.get('http://data_service_sm:3000/getUserByLogin', json={'login': login})
-        user = json.loads(req.text)
-        self.user_id = user['user_id']
-        self.username = user['username']
-        self.email = user['email']
-        self.password_hash = user['password_hash']
-        self.role = user['role']
-        return user
+        if req.status_code == 200:
+            user = json.loads(req.text)
+            self.user_id = user['user_id']
+            self.username = user['username']
+            self.email = user['email']
+            self.password_hash = user['password_hash']
+            self.role = user['role']
+            return user
+        return None
 
     def register_user_in_system(self):
         user_json = {

@@ -77,19 +77,28 @@ function getRecord () {
 async function getUserById(request, response) {
     const user_id = request.body.user_id;
     let userObject = User.systemUser(pool);
-    return (await userObject.getUserById(user_id));
+    const userInDb = (await userObject.getUserById(user_id));
+    if (userInDb !== undefined) {
+        response.status(200).json(userInDb);
+    }
+    response.status(404).json({'error': 'Не удалось найти пользователя с данным идентификатором.'});
 }
 
 async function getUserByLogin(request, response) {
     const login = request.body.login;
     let userObject = User.systemUser(pool);
-    return (await userObject.getUserByLogin(login));
+    const userInDb = await userObject.getUserByLogin(login);
+    if (userInDb !== undefined) {
+        response.status(200).json(userInDb);
+    }
+    response.status(404).json({'error': 'Не удалось найти пользователя с данным email.'});
 }
 
 async function registerUser(request, response) {
     const user_json = request.body.user_json;
     let userObject = User.withoutId(pool, user_json);
-    return (await userObject.insertWithReturnId());
+    const userInDb = (await userObject.insertWithReturnId());
+    response.status(200).json(userInDb);
 }
 
 async function saveRecord(msg) {

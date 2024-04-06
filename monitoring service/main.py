@@ -7,7 +7,7 @@ from scheduler import Scheduler
 import json
 import requests
 
-from flask_login import LoginManager, login_user, login_required, logout_user
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from user import User
 
 scheduler = BackgroundScheduler()
@@ -26,7 +26,9 @@ login = LoginManager(app)
 @login.user_loader
 def load_user(user_id):
     req = requests.get('http://data_service_sm:3000/getUserById', json={'user_id': user_id})
-    return json.loads(req.text)
+    objectuser = json.loads(req.text)
+    gettingUser = User(user_id=objectuser['user_id'], username=objectuser['username'], email=objectuser['email'], password_hash=objectuser['password_hash'], role=objectuser['role'])
+    return gettingUser
 
 @app.route('/login', methods=['GET', 'POST'])
 def signIn():
@@ -62,6 +64,20 @@ def signUp():
             new_user.register_user_in_system()
             return redirect(url_for('signIn'))
     return render_template('signUp.html')
+
+@app.route('/profile', methods=['GET'])
+@login_required
+def profile():
+    username = current_user.username
+    email = current_user.email
+    return render_template('profile.html', username=username, email=email)
+
+@app.route('/editProfile', methods=['GET', 'POST'])
+@login_required
+def editProfile():
+    if request.method == 'POST':
+        return redirect(url_for('profile'))
+    return render_template('editProfile.html')
 
 
 @app.route('/logout', methods=['GET', 'POST'])

@@ -4,11 +4,11 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(UserMixin):
-    def __init__(self, username, email, role):
-        self.user_id = int()
+    def __init__(self, username='', email='', role='', user_id=int(), password_hash=str()):
+        self.user_id = user_id
         self.username = username
         self.email = email
-        self.password_hash = str()
+        self.password_hash = password_hash
         self.role = role
 
     def set_password(self, password):
@@ -26,7 +26,7 @@ class User(UserMixin):
             self.email = user['email']
             self.password_hash = user['password_hash']
             self.role = user['role']
-            return user
+            return self#user
         return None
 
     def register_user_in_system(self):
@@ -38,3 +38,6 @@ class User(UserMixin):
             'role': self.role
         }
         requests.get('http://data_service_sm:3000/registerUser', json={'user_json': user_json})
+
+    def get_id(self):
+        return self.user_id

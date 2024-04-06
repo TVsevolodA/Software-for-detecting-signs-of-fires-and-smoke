@@ -1,0 +1,215 @@
+<html>
+    <head>
+        <title>Edit profile</title>
+        <meta charset="utf-8">
+        <!-- BootStrap -->
+        <link href=" https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet" >
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+        <style>
+            a { text-decoration:none; }
+            body, main { display: flex; }
+            main {
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+            }
+            body {
+                flex-direction: column;
+                height: 100%;
+            }
+            form {
+                text-align: center;
+                min-width: 400px;
+                width: 40%;
+                height: auto;
+                padding: 15px;
+                border: 1px solid gray;
+                border-radius: 25px;
+            }
+            .bi-check:hover {
+                color: lime;
+            }
+            #submutCheckIcon {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            #repeatPasswordLabel {
+                white-space:pre-wrap;
+                text-align: start;
+                font-weight: 600;
+            }
+            #titlePage {
+                font-size: 18;
+                font-weight: 600;
+            }
+            #passwordChangeBlock { display: none; }
+            #checkboxPassword {
+                display: flex;
+                padding-left: 5%;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Главная</a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Роли</a></li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">
+                            <i class="bi bi-bell h1"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{url_for('profile')}}">
+                            <i class="bi bi-person-circle h1"></i>
+                        </a>
+                    </li>
+                </ul>
+                </div>
+            </nav>
+        </header>
+        <main>
+            <form action="{{url_for('editProfile')}}" method="post" class="g-3 needs-validation" novalidate>
+                <div id="submutCheckIcon" class="form-outline mb-4">
+                    <div id="titlePage">Изменение персональных данных рользователя</div>
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="bi bi-check fa-3x"></i>
+                    </button>
+                </div>
+                <div class="form-outline mb-4">
+                    <input type="text" id="username" name="username" required placeholder="Имя пользователя" class="form-control">
+                    <div class="invalid-feedback">Пожалуйста, введите свое имя.</div>
+                </div>
+                <div class="form-outline mb-4">
+                    <input type="email" id="email" name="email" required placeholder="Email" class="form-control">
+                    <div class="invalid-feedback">Пожалуйста, введите действительный адрес электронной почты.</div>
+                </div>
+                <div id="checkboxPassword" class="form-outline mb-4">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="changePassword" name="changePassword" onclick="setVisibilityChangePasswordBlock()">
+                        <label class="form-check-label" for="changePassword">Сменить пароль</label>
+                    </div>
+                </div>
+                <div id="passwordChangeBlock">
+                    <div class="form-outline mb-4">
+                        <input type="password" required placeholder="Текущий пароль" id="oldPassword" name="oldPassword" class="form-control" />
+                        <div class="invalid-feedback" id="passwordLabel">Пожалуйста, введите старый пароль.</div>
+                    </div>
+                    <div class="form-outline mb-4">
+                        <input type="password" required placeholder="Новый пароль" id="password" name="password" class="form-control" />
+                        <div class="invalid-feedback" id="passwordLabel">Пожалуйста, введите пароль.</div>
+                    </div>
+                    <div class="form-outline mb-4">
+                        <input type="password" required placeholder="Повторите новый пароль" id="repeatPassword"class="form-control" />
+                        <div class="invalid-feedback" id="repeatPasswordLabel"></div>
+                    </div>
+                </div>
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                <div>
+            </form>
+        </main>
+        <!-- BootStrap -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <script>
+            const changePassword = document.getElementById('changePassword');
+            function setVisibilityChangePasswordBlock() {
+                let passwordChangeBlock = document.getElementById('passwordChangeBlock');
+                passwordChangeBlock.style.display = changePassword.checked ? 'block' : 'none';
+            }
+
+            (function () {
+                'use strict'
+                let forms = document.querySelectorAll('.needs-validation');
+                
+                Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        let validForm = true;
+                        let checkList = new Map([
+                            ['longPassword', true],
+                            ['presenceLettersAndNumbers', true],
+                            ['matchingPasswords', true],
+                        ]);
+                        const errorMessages = new Map([
+                            ['longPassword', ['', '• Длина пароля должна быть не менее 8 символов']],
+                            ['presenceLettersAndNumbers', ['', '• Пароль должен содержать заглавные и прописные буквы латинского алфавита, а также спец. символы']],
+                            ['matchingPasswords', ['Пожалуйста, введите пароль.', '• Пароли не совпадают']],
+                        ]);
+
+                        /// Провека имени пользователя и email
+                        let username = document.getElementById('username');
+                        let email = document.getElementById('email');
+
+                        if (username.value.length === 0) {
+                            username.setCustomValidity('Пожалуйста, введите свое имя.');
+                        }
+                        if (email.value.length === 0) {
+                            email.setCustomValidity('Пожалуйста, введите действительный адрес электронной почты.');
+                        }
+                        else {
+                            email.setCustomValidity('');
+                            username.setCustomValidity('');
+                        }
+
+                        /// Проверка пароля;
+                        if (changePassword.checked) {
+                            let password = document.getElementById('password').value;
+                            let passwordRepetition = document.getElementById('repeatPassword').value;
+                            const passwordValidator = new RegExp(/^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,16}$/gm);
+                            const resultValidator = passwordValidator.test(password);
+                            if (!resultValidator) {
+                                checkList.set('presenceLettersAndNumbers', false);
+                            }
+                            if (password.length < 8) {
+                                checkList.set('longPassword', false);
+                            }
+                            if (password !== passwordRepetition) {
+                                checkList.set('matchingPasswords', false);
+                            }
+
+                            let listErrorsInPassword = '';
+                            checkList.forEach((value, key, map) => {
+                                if (!value) {
+                                    validForm = false;
+                                    listErrorsInPassword += errorMessages.get(key)[1] + '\n';
+                                }
+                            });
+                            if (!validForm) {
+                                document.getElementById('password').setCustomValidity(listErrorsInPassword);
+                                document.getElementById('repeatPassword').setCustomValidity(listErrorsInPassword);
+                                let repeatPasswordLabel = document.getElementById('repeatPasswordLabel');
+                                repeatPasswordLabel.innerHTML = listErrorsInPassword;
+                                let passwordLabel = document.getElementById('passwordLabel');
+                                passwordLabel.innerHTML = password.length === 0 ? errorMessages.get('matchingPasswords')[0] : '';
+                            }
+                            else {
+                                document.getElementById('password').setCustomValidity('');
+                                document.getElementById('repeatPassword').setCustomValidity('');
+                            }
+                        }
+
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            })();
+        </script>
+    </body>
+<html>

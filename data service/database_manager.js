@@ -80,8 +80,9 @@ async function getUserById(request, response) {
     const userInDb = (await userObject.getUserById(user_id));
     if (userInDb !== undefined) {
         response.status(200).json(userInDb);
+    } else {
+        response.status(404).json({'error': 'Не удалось найти пользователя с данным идентификатором.'});
     }
-    response.status(404).json({'error': 'Не удалось найти пользователя с данным идентификатором.'});
 }
 
 async function getUserByLogin(request, response) {
@@ -89,9 +90,11 @@ async function getUserByLogin(request, response) {
     let userObject = User.systemUser(pool);
     const userInDb = await userObject.getUserByLogin(login);
     if (userInDb !== undefined) {
+        console.log(userInDb);
         response.status(200).json(userInDb);
+    } else {
+        response.status(404).json({'error': 'Не удалось найти пользователя с данным email.'});
     }
-    response.status(404).json({'error': 'Не удалось найти пользователя с данным email.'});
 }
 
 async function registerUser(request, response) {

@@ -19,6 +19,31 @@
         align-items: center;
       }
       a { text-decoration:none; }
+      .modal-dialog {
+        position: absolute;
+        top: 10%;
+        right: 0;
+        bottom: 0;
+        max-width: 35%;
+        z-index: 10040;
+        overflow: auto;
+        overflow-y: auto;
+      }
+      p {
+          /* width: 25ch; */
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+      }
+      .notificationContent {
+        padding: 5px 10px;
+      }
+      .titleNotification {
+        display: flex;
+      }
+      .contextNotification {
+        margin-left: 5%;
+      }
     </style>
   </head>
   <body>
@@ -26,7 +51,7 @@
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
           <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Главная</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('index')}}">Главная</a></li>
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Роли</a></li>
@@ -38,9 +63,9 @@
               </button>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">
+              <button type="button" id="notifications" onclick="openNotificationWindow()" class="nav-link active" aria-current="page">
                 <i class="bi bi-bell h1"></i>
-              </a>
+              </button>
             </li>
             <li class="nav-item">
               <a class="nav-link active" aria-current="page" href="{{url_for('profile')}}">
@@ -52,6 +77,40 @@
       </nav>
     </header>
     <main>
+      <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Уведомления</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              
+              <!-- <div class="alert alert-warning alert-danger fade show">
+                <div class="titleNotification" role="alert">
+                  <div class="notificationContent">
+                    <i class="bi bi-exclamation-octagon-fill h5"></i>
+                  </div>
+                  <div class="notificationContent">
+                    <p>
+                      <strong>Камера name_camera</strong>
+                    </p>
+                  </div>
+                  <div class="notificationContent">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                </div>
+                <div class="contextNotification">
+                  <div>Дата и время</div>
+                  <div>Признаки</div>
+                </div>
+              </div> -->
+
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="pageTitle">
         <h1>Видеотрансляции с камер</h1>
       </div>
@@ -62,6 +121,76 @@
     <!-- SocketIO -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
+      let uniqueNotifications = new Map();
+
+      let statusWindowNotification = false;
+      let myModal = new bootstrap.Modal(document.getElementById('myModal'),{backdrop: false});
+
+      function openNotificationWindow() {
+        statusWindowNotification = !statusWindowNotification;
+        if (statusWindowNotification) {
+          myModal.show();
+          let modalWindow = document.getElementsByClassName('modal-body')[0];
+          uniqueNotifications.forEach((value, key, map) => {
+            let signs = JSON.stringify(value.signs);
+            signs = JSON.parse(signs);
+            let detectedSigns = '';
+            if (signs.Fire !== undefined) detectedSigns += `Признаки пожара: ${signs.Fire}\n`;
+            if (signs.Smoke !== undefined) detectedSigns += `Признаки задымления: ${signs.Smoke}`;
+            createNewBlockNotification(modalWindow, key, value.dateTime, detectedSigns);
+          });
+        }
+        else {
+          myModal.hide();
+        }
+      }
+
+      function createNewBlockNotification(mw, cn, dt, ss) {
+        let generalBlock = document.createElement('div');
+        let titleNotification = document.createElement('div');
+        let iconBlock = document.createElement('div');
+        let icon = document.createElement('i');
+        let cameraNameBlock = document.createElement('div');
+        let paragrafcameraName = document.createElement('p');
+        let cameraName = document.createElement('strong');
+        let closeNotificationBlock = document.createElement('div');
+        let closeNotificationButton = document.createElement('button');
+        let contextNotification = document.createElement('div');
+        let dateTimeBlock = document.createElement('div');
+        let signsBlock = document.createElement('div');
+
+        generalBlock.className = "alert alert-warning alert-danger fade show";
+        titleNotification.className = "titleNotification";
+        titleNotification.setAttribute("role", "alert");
+        iconBlock.className = "notificationContent";
+        icon.className = "bi bi-exclamation-octagon-fill h5";
+        cameraNameBlock.className = "notificationContent";
+        closeNotificationBlock.className = "notificationContent";
+        closeNotificationButton.type = "button";
+        closeNotificationButton.className = "btn-close";
+        closeNotificationButton.setAttribute("data-bs-dismiss", "alert");
+        closeNotificationButton.setAttribute("aria-label", "Close");
+        contextNotification.className = "notificationContent";
+        signsBlock.id = cn;
+
+        cameraName.innerHTML = "Камера " + cn;
+        dateTimeBlock.innerHTML = dt;
+        signsBlock.innerHTML = ss;
+
+        mw.appendChild(generalBlock);
+        generalBlock.appendChild(titleNotification);
+        titleNotification.appendChild(iconBlock);
+        iconBlock.appendChild(icon);
+        titleNotification.appendChild(cameraNameBlock);
+        cameraNameBlock.appendChild(paragrafcameraName);
+        paragrafcameraName.appendChild(cameraName);
+        titleNotification.appendChild(closeNotificationBlock);
+        closeNotificationBlock.appendChild(closeNotificationButton);
+        generalBlock.appendChild(contextNotification);
+        contextNotification.appendChild(dateTimeBlock);
+        contextNotification.appendChild(signsBlock);
+      }
+
       function changeSizeStream(imgs, w, h) {
         for (let i = 0; i < imgs.length; i++) {
           let image = imgs[i];
@@ -89,6 +218,7 @@
         }
       }
 
+
       document.addEventListener("DOMContentLoaded", () => {
         const socket = io.connect('http://localhost:5050', {
           'reconnection': true,
@@ -106,17 +236,21 @@
             iconBell.classList.remove('bi-bell');
             iconBell.classList.add('bi-bell-fill');
           }
+          /// Для диамического обновления данных, при открытом окне уведомлений!
+          if (uniqueNotifications.get(data.camera_name) !== undefined) {
+            let newSigns = JSON.stringify(data.value);
+            newSigns = JSON.parse(newSigns);
+            let detectedSigns = '';
+            if (newSigns.Fire !== undefined) detectedSigns += `Признаки пожара: ${newSigns.Fire}\n`;
+            if (newSigns.Smoke !== undefined) detectedSigns += `Признаки задымления: ${newSigns.Smoke}`;
+            let notification = document.getElementById(data.camera_name);
+            if (notification !== null) notification.innerHTML = detectedSigns;
+          }
+
+          /// Вносим изменения в map
+          uniqueNotifications.set(data.camera_name, {'dateTime': new Date(), 'signs': data.value});
         });
       });
-
-      // for (let i = 0; i < 50; i++) {
-      //   let stream = document.createElement('div');
-      //   stream.style.margin = '2%';
-      //   stream.style.width = '300px';
-      //   stream.style.height = '225px';
-      //   stream.style.border = '2px solid black';
-      //   document.getElementById('streams').append(stream);
-      // }
       
       const cameras = '{{cameras|tojson}}';
       console.log(cameras);

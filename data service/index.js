@@ -43,6 +43,7 @@ app.get('/getListSources', async (request, response) => {
 app.get('/getUserById', (request, response) => databaseManager.getUserById(request, response));
 app.get('/getUserByLogin', (request, response) => databaseManager.getUserByLogin(request, response));
 app.get('/registerUser', (request, response) => databaseManager.registerUser(request, response));
+app.get('/profileUpdate', (request, response) => databaseManager.profileUpdate(request, response));
 
 
 app.get('/getEventTriggers', async (request, response) => await databaseManager.getEventTriggers(request, response));

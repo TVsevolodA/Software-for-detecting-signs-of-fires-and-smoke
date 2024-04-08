@@ -26,9 +26,11 @@ login = LoginManager(app)
 @login.user_loader
 def load_user(user_id):
     req = requests.get('http://data_service_sm:3000/getUserById', json={'user_id': user_id})
-    objectuser = json.loads(req.text)
-    gettingUser = User(user_id=objectuser['user_id'], username=objectuser['username'], email=objectuser['email'], password_hash=objectuser['password_hash'], role=objectuser['role'])
-    return gettingUser
+    if req.status_code == 200:
+        objectuser = json.loads(req.text)
+        gettingUser = User(user_id=objectuser['user_id'], username=objectuser['username'], email=objectuser['email'], password_hash=objectuser['password_hash'], role=objectuser['role'])
+        return gettingUser
+    return None
 
 @app.route('/login', methods=['GET', 'POST'])
 def signIn():
@@ -58,11 +60,11 @@ def signUp():
         username = login_form['username']
         email = login_form['login']
         password = login_form['password']
-        if request.method == 'POST':
-            new_user = User(username=username, email=email, role='dispatcher')
-            new_user.set_password(password)
-            new_user.register_user_in_system()
-            return redirect(url_for('signIn'))
+        # if request.method == 'POST':
+        new_user = User(username=username, email=email, role='dispatcher')
+        new_user.set_password(password)
+        new_user.register_user_in_system()
+        return redirect(url_for('signIn'))
     return render_template('signUp.html')
 
 @app.route('/profile', methods=['GET'])
@@ -75,9 +77,45 @@ def profile():
 @app.route('/editProfile', methods=['GET', 'POST'])
 @login_required
 def editProfile():
+    username = current_user.username
+    email = current_user.email
     if request.method == 'POST':
-        return redirect(url_for('profile'))
-    return render_template('editProfile.html')
+        login_form = request.form
+        newUsername = login_form['username']
+        newEmail = login_form['email']
+        oldPassword = login_form['oldPassword']
+        newPassword = login_form['password']
+        # Проверяем что пользователя с новой почтой нет в БД!
+        userObject = User(username='', email=newEmail, role='dispatcher')
+        modifiedDataUser = userObject.get_user_by_login(newEmail)
+        if not modifiedDataUser or modifiedDataUser.user_id == current_user.user_id:
+            # Если такого пользователя нет, то проверяет что у текущего пользователя правильно введен старый пароль
+            userObject = User(username='', email=email, role='dispatcher')
+            oldDataUser = userObject.get_user_by_login(email)
+            # Если пользователь ввел новый пароль
+            if len(oldPassword) > 0:
+                # Изменение данных с паролем
+                if userObject.check_password(oldPassword):
+                    oldDataUser.set_password(newPassword)
+                    oldDataUser.changing_profile(username=newUsername, email=newEmail)
+                    current_user.username = newUsername
+                    current_user.email = newEmail
+                    current_user.password_hash = oldDataUser.password_hash
+                    flash('Изменения успешно применены.')
+                    return redirect(url_for('profile'))
+                else:
+                    flash('Неверно указан пароль.')
+                    return render_template('editProfile.html', username=newUsername, email=newEmail)
+            else:
+                # Изменение данных без пароля
+                oldDataUser.changing_profile(username=newUsername, email=newEmail)
+                current_user.username = newUsername
+                current_user.email = newEmail
+                flash('Изменения успешно применены.')
+                return redirect(url_for('profile'))
+        else:
+            flash('Введенный адрес электронной почты уже зарегистрирован в системе.')
+    return render_template('editProfile.html', username=username, email=email)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -185,7 +223,7 @@ def background_thread(id):
             el = signs.get(sign)
             if el is not None:
                 new_signs[sign] = el
-        socketio.emit('data', {'value': new_signs})
+        socketio.emit('data', {'camera_name': camera.dict_camera['name'], 'value': new_signs})
         socketio.sleep(1)
 
 def getSigns():

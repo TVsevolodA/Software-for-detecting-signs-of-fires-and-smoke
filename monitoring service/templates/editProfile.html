@@ -56,7 +56,7 @@
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Главная</a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('index')}}">Главная</a></li>
                     <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
                     <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
                     <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Роли</a></li>
@@ -85,11 +85,11 @@
                     </button>
                 </div>
                 <div class="form-outline mb-4">
-                    <input type="text" id="username" name="username" required placeholder="Имя пользователя" class="form-control">
+                    <input type="text" id="username" name="username" required placeholder="Имя пользователя" class="form-control" value="{{username}}">
                     <div class="invalid-feedback">Пожалуйста, введите свое имя.</div>
                 </div>
                 <div class="form-outline mb-4">
-                    <input type="email" id="email" name="email" required placeholder="Email" class="form-control">
+                    <input type="email" id="email" name="email" required placeholder="Email" class="form-control" value="{{email}}">
                     <div class="invalid-feedback">Пожалуйста, введите действительный адрес электронной почты.</div>
                 </div>
                 <div id="checkboxPassword" class="form-outline mb-4">
@@ -100,15 +100,15 @@
                 </div>
                 <div id="passwordChangeBlock">
                     <div class="form-outline mb-4">
-                        <input type="password" required placeholder="Текущий пароль" id="oldPassword" name="oldPassword" class="form-control" />
+                        <input type="password" placeholder="Текущий пароль" id="oldPassword" name="oldPassword" class="form-control" />
                         <div class="invalid-feedback" id="passwordLabel">Пожалуйста, введите старый пароль.</div>
                     </div>
                     <div class="form-outline mb-4">
-                        <input type="password" required placeholder="Новый пароль" id="password" name="password" class="form-control" />
+                        <input type="password" placeholder="Новый пароль" id="password" name="password" class="form-control" />
                         <div class="invalid-feedback" id="passwordLabel">Пожалуйста, введите пароль.</div>
                     </div>
                     <div class="form-outline mb-4">
-                        <input type="password" required placeholder="Повторите новый пароль" id="repeatPassword"class="form-control" />
+                        <input type="password" placeholder="Повторите новый пароль" id="repeatPassword"class="form-control" />
                         <div class="invalid-feedback" id="repeatPasswordLabel"></div>
                     </div>
                 </div>
@@ -129,6 +129,13 @@
             function setVisibilityChangePasswordBlock() {
                 let passwordChangeBlock = document.getElementById('passwordChangeBlock');
                 passwordChangeBlock.style.display = changePassword.checked ? 'block' : 'none';
+
+                let oldPassword = document.getElementById('oldPassword');
+                let password = document.getElementById('password');
+                let repeatPassword = document.getElementById('repeatPassword');
+                oldPassword.required = !oldPassword.required;
+                password.required = !password.required;
+                repeatPassword.required = !repeatPassword.required;
             }
 
             (function () {
@@ -204,6 +211,11 @@
                                 document.getElementById('password').setCustomValidity('');
                                 document.getElementById('repeatPassword').setCustomValidity('');
                             }
+                        }
+                        else {
+                            document.getElementById('oldPassword').setCustomValidity('');
+                            document.getElementById('password').setCustomValidity('');
+                            document.getElementById('repeatPassword').setCustomValidity('');
                         }
 
                         form.classList.add('was-validated');

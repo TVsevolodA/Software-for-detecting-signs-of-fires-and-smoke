@@ -90,7 +90,6 @@ async function getUserByLogin(request, response) {
     let userObject = User.systemUser(pool);
     const userInDb = await userObject.getUserByLogin(login);
     if (userInDb !== undefined) {
-        console.log(userInDb);
         response.status(200).json(userInDb);
     } else {
         response.status(404).json({'error': 'Не удалось найти пользователя с данным email.'});
@@ -102,6 +101,14 @@ async function registerUser(request, response) {
     let userObject = User.withoutId(pool, user_json);
     const userInDb = (await userObject.insertWithReturnId());
     response.status(200).json(userInDb);
+}
+
+function profileUpdate(request, response) {
+    const modifiedDataUser = request.body.modifiedDataUser;
+    console.log(`Получили объект нового пользователя: ${JSON.stringify(modifiedDataUser)}`);
+    let userObject = new User(pool, modifiedDataUser);
+    userObject.update();
+    response.status(200).json({"result": "Данные о пользователе успешно обновлены"});
 }
 
 async function saveRecord(msg) {
@@ -281,6 +288,7 @@ module.exports = {
     getUserById,
     getUserByLogin,
     registerUser,
+    profileUpdate,
     saveRecord,
     getRecord,
     registerCamera,

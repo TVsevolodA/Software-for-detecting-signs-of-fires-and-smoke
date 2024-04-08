@@ -33,6 +33,21 @@ module.exports= class User{
                 ).rows[0].user_id;
     }
 
+    async update() {
+        await this.pool.query(`UPDATE users
+        SET
+        username = $2,
+        email = $3,
+        password_hash = $4
+        WHERE user_id = $1`,
+        [
+            this.user_id,
+            this.username,
+            this.email,
+            this.password_hash
+        ]);
+    }
+
     async getUserRole(duty) {
         return (await this.pool.query("SELECT role FROM users WHERE user_id = $1;", [duty])).rows[0].role;
     }

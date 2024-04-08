@@ -8,4 +8,3 @@
     1.1) Для таблиц location_cameras, cameras - DELETE (Удалять данные из kafka + db + добавить UI)
     1.3) Для таблицы reports - CREATE, READ, UPDATE
     1.4) Для таблицы notifications - READ + добавить UI
-2) Регистрация и авторизация

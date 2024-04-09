@@ -211,31 +211,32 @@ def setAction():
     action_planner.add_task(data)
     return redirect(url_for('index'))
 
-def background_thread(id):
+def background_thread(ids):
     while True:
-        camera, url = camerasBuilder.getVideoCamera(id)
-        signs = {}
-        if (camera.getStatusCamera()):
-            signs = camera.signs.get()
-        
-        new_signs = {}
-        for sign in ['Fire', 'Smoke']:
-            el = signs.get(sign)
-            if el is not None:
-                new_signs[sign] = el
-        socketio.emit('data', {'camera_name': camera.dict_camera['name'], 'value': new_signs})
-        socketio.sleep(1)
+        for id in ids:
+            camera, _ = camerasBuilder.getVideoCamera(id)
+            signs = {}
+            if (camera.getStatusCamera()):
+                signs = camera.signs.get()
+            
+            new_signs = {}
+            for sign in ['Fire', 'Smoke']:
+                el = signs.get(sign)
+                if el is not None:
+                    new_signs[sign] = el
+            socketio.emit('data', {'camera_name': camera.dict_camera['name'], 'value': new_signs})
 
 def getSigns():
     global thread
     with thread_lock:
         if thread is None:
-            id_video = customer_videos.get(request.sid)
-            thread = socketio.start_background_task(background_thread, id_video)
+            id_videos = customer_videos.get(request.sid)
+            thread = socketio.start_background_task(background_thread, id_videos)
 
 @socketio.on('my_event')
 def saving_users_video_id(arg):
-    customer_videos[request.sid] = int(arg['data'])
+    cv = customer_videos.get(request.sid)
+    customer_videos[request.sid] = list(arg['data'])
     print(f'Получили: {arg}. Его sid: {request.sid}. Сохранили данные в словарь')
     getSigns()
 

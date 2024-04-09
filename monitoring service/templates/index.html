@@ -121,28 +121,43 @@
     <!-- SocketIO -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
-      let uniqueNotifications = new Map();
+      let uniqueNotifications = localStorage.notifications === undefined ? new Map() : new Map(JSON.parse(localStorage.notifications));
 
       let statusWindowNotification = false;
       let myModal = new bootstrap.Modal(document.getElementById('myModal'),{backdrop: false});
+      let modalWindow = document.getElementsByClassName('modal-body')[0];
+
+      const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'long',
+        timezone: 'UTC',
+        hour: 'numeric',
+        minute: 'numeric'
+      };
 
       function openNotificationWindow() {
         statusWindowNotification = !statusWindowNotification;
         if (statusWindowNotification) {
           myModal.show();
-          let modalWindow = document.getElementsByClassName('modal-body')[0];
           uniqueNotifications.forEach((value, key, map) => {
-            let signs = JSON.stringify(value.signs);
-            signs = JSON.parse(signs);
-            let detectedSigns = '';
-            if (signs.Fire !== undefined) detectedSigns += `Признаки пожара: ${signs.Fire}\n`;
-            if (signs.Smoke !== undefined) detectedSigns += `Признаки задымления: ${signs.Smoke}`;
+            const detectedSigns = getSigns(value.signs);
             createNewBlockNotification(modalWindow, key, value.dateTime, detectedSigns);
           });
         }
         else {
           myModal.hide();
         }
+      }
+
+      function getSigns(value) {
+        let signs = JSON.stringify(value);
+        signs = JSON.parse(signs);
+        let detectedSigns = '';
+        if (signs.Fire !== undefined) detectedSigns += `Признаки пожара: ${signs.Fire}\n`;
+        if (signs.Smoke !== undefined) detectedSigns += `Признаки задымления: ${signs.Smoke}`;
+        return detectedSigns;
       }
 
       function createNewBlockNotification(mw, cn, dt, ss) {
@@ -222,13 +237,15 @@
       document.addEventListener("DOMContentLoaded", () => {
         const socket = io.connect('http://localhost:5050', {
           'reconnection': true,
-          'reconnectionDelayMax': 5000,
-          'reconnectionAttempts': 5
+          // 'reconnectionDelayMax': 5000,
+          // 'reconnectionAttempts': 5
         });
         socket.on('connect', function() {
+          let list_id_camera = [];
           for (let i = 0; i < cameraСounter; i++) {
-            socket.emit('my_event', {data: i});
+            list_id_camera.push(i);
           }
+          socket.emit('my_event', {data: list_id_camera});
         });
         socket.on("data", function(data) {
           let iconBell = document.getElementsByClassName('bi-bell')[0];
@@ -247,8 +264,17 @@
             if (notification !== null) notification.innerHTML = detectedSigns;
           }
 
+          else {
+            /// Дорисавываем новое уведомление, если окно открыто
+            if (statusWindowNotification) {
+              const detectedSigns = getSigns(data.value);
+              createNewBlockNotification(modalWindow, data.camera_name, new Date().toLocaleString("ru", options), detectedSigns);
+            }
+          }
+
           /// Вносим изменения в map
-          uniqueNotifications.set(data.camera_name, {'dateTime': new Date(), 'signs': data.value});
+          uniqueNotifications.set(data.camera_name, {'dateTime': new Date().toLocaleString("ru", options), 'signs': data.value});
+          localStorage.notifications = JSON.stringify(Array.from(uniqueNotifications));
         });
       });
       

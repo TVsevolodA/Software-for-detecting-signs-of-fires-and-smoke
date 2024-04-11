@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>infoСamera</title>
+    <title>scheduledEvents</title>
     <!-- BootStrap -->
     <link href=" https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet" >
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
@@ -91,43 +91,44 @@
         </div>
         <div id="parameter" class="input-group mb-3">
           <ul class="list-group list-group-flush">
-            <span class="input-group-text">Статус</span>
+            <span class="input-group-text">Тип собития</span>
             <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1 status" value="Работает" aria-label="..." onclick="filtering(1, 'status')" />
-              Включенные
+                <input class="form-check-input" type="radio" name="action" value="recurring" id="recurring" onclick="filtering(1, 'recurring_event')"/>
+                <label class="form-check-label" for="recurring">Повторяющиеся</label>
             </li>
             <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1 status" value="Выключенные" aria-label="..." onclick="filtering(1, 'status')" />
-              Выключенные
+                <input class="form-check-input" type="radio" name="action" value="OneTimePayments" id="OneTimePayments" onclick="filtering(1, 'recurring_event')"/>
+                <label class="form-check-label" for="OneTimePayments">Единовременные</label>
             </li>
           </ul>
         </div>
         <div id="parameter" class="input-group mb-3">
-          <!-- TODO: Не обязательно. Динамически создавать. Для этого нужно получать список городов! -->
           <ul class="list-group list-group-flush">
-            <span class="input-group-text">Местоположение</span>
+            <span class="input-group-text">Вид события</span>
             <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1 city" value="Саратов" aria-label="..." onclick="filtering(3, 'city')" />
-              Саратов
+              <input type="checkbox" class="form-check-input me-1" value="oneCamera" aria-label="..." onclick="filtering(2, 'action')" />
+              Отчет по одной камере
             </li>
             <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1 city" value="Энгельс" aria-label="..." onclick="filtering(3, 'city')" />
-              Энгельс
+              <input type="checkbox" class="form-check-input me-1" value="allCameras" aria-label="..." onclick="filtering(2, 'action')" />
+              Отчет по всем камерам
             </li>
           </ul>
         </div>
       </form>
       <table id="dataTable" class="table table-hover table-bordered caption-top sortable">
-        <!-- <caption>Доступные камеры</caption> -->
+        <caption>Зарегистрированные собития</caption>
         <thead>
           <tr>
             <th valign="middle" style="text-align: center;">Наименование</th>
-            <th valign="middle" style="text-align: center;">URL-адрес</th>
-            <th valign="middle" style="text-align: center;">Состояние</thё>
-            <th valign="middle" style="text-align: center;">Координаты (долгота, широта)</th>
-            <th valign="middle" style="text-align: center;">Адрес</th>
+            <th valign="middle" style="text-align: center;">Описание</th>
+            <th valign="middle" style="text-align: center;">Тип события</thё>
+            <th valign="middle" style="text-align: center;">Дата срабатывания</th>
+            <th valign="middle" style="text-align: center;">Частота срабатывания</th>
+            <th valign="middle" style="text-align: center;">Событие</th>
           </tr>
         </thead>
+        <tbody></tbody>
       </table>
     </main>
     <!-- BootStrap -->
@@ -139,51 +140,16 @@
       //@ts-check
       /// Сортировка
       let table = document.getElementById('dataTable');
-      let tbody = document.createElement('tbody');
-      table.appendChild(tbody);
+      let tbody = document.getElementsByTagName('tbody')[0];
+      const events = '{{ events|tojson }}';
+      const data = JSON.parse(events);
 
-      // const infoCameras = '[{"name": "Xiaomi_Smart_Camera", "url": "http://camera:5040", "status": "Работает", "longitude": 45.980185, "latitude": 51.529657, "address": "г.Саратов,ул.Политехническая,77"}, {"name": "Hi_Watch", "url": "http://hi_watch:5030", "status": "Работает", "longitude": 46.02105074284403, "latitude": 51.53410530670002, "address": "Саратов, улица имени В.И. Чапаева, 61"}]';
-      const infoCameras = '{{ infoCameras|tojson }}';
-      const data = JSON.parse(infoCameras);
-
-      let iter = 0;
-      for (let objCamera in data)
+      for (let objEvent in data)
       {
-        const stringCamera = JSON.stringify(data[objCamera]);
-        const camera = JSON.parse(stringCamera);
-
-        let blockTr = document.createElement('tr');
-
-        let linkCamera = document.createElement('a');
-        linkCamera.href = `/infoСamera/cameras/${camera['name']}/${camera['id']}/${iter++}`;
-        linkCamera.innerHTML = camera['name'];
-        let nameCamera = document.createElement('th');
-        // nameCamera.innerHTML = camera['name'];
-        blockTr.appendChild(nameCamera);
-        nameCamera.appendChild(linkCamera);
-
-        let urlCamera = document.createElement('td');
-        urlCamera.innerHTML = camera['url'];
-        blockTr.appendChild(urlCamera);
-
-        let statusCamera = document.createElement('td');
-        statusCamera.style.fontWeight = 'bold';
-        statusCamera.style.color = camera['status'] === 'Работает' ? '#00ff00': '#ff4e33';
-        // statusCamera.style.background = camera['status'] === 'Работает' ? '#00ff00': '#ff4e33';
-        statusCamera.innerHTML = camera['status'];
-        blockTr.appendChild(statusCamera);
-
-        let locationCamera = document.createElement('td');
-        locationCamera.innerHTML = camera['longitude'] + ', ' + camera['latitude'];
-        blockTr.appendChild(locationCamera);
-
-        let addressCamera = document.createElement('td');
-        addressCamera.innerHTML = camera['address'];
-        blockTr.appendChild(addressCamera);
-
-        // TODO: Не обязательно. Функция удаления камеры!
-
-        tbody.appendChild(blockTr);
+        const stringEvent = JSON.stringify(data[objEvent]);
+        const event = JSON.parse(stringEvent);
+        event['name'];
+        tbody.innerHTML += ``;
       }
 
       // Фильтрация
@@ -241,8 +207,6 @@
             else tr[i].style.display = "none";
           }
         }
-        // const valueSearch = document.getElementById('search').value;
-        // if (event.key === 'Enter') console.log(valueSearch);
       }
     </script>
   </body>

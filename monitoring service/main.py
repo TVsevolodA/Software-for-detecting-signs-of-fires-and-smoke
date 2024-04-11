@@ -45,11 +45,11 @@ def signIn():
             user = userObject.get_user_by_login(user_login)
             if user and userObject.check_password(password):
                 login_user(user)
-                flash('Успешно вошел в систему.')
+                flash('Успешно вошел в систему.', 'info')
                 next = request.args.get('next')
                 return redirect(next or url_for('index'))
             else:
-                flash('Неверный логин или пароль.')
+                flash('Неверный логин или пароль.', 'error')
         return render_template('signIn.html')
 
 
@@ -101,20 +101,20 @@ def editProfile():
                     current_user.username = newUsername
                     current_user.email = newEmail
                     current_user.password_hash = oldDataUser.password_hash
-                    flash('Изменения успешно применены.')
+                    flash('Изменения успешно применены.', 'info')
                     return redirect(url_for('profile'))
                 else:
-                    flash('Неверно указан пароль.')
+                    flash('Неверно указан пароль.', 'error')
                     return render_template('editProfile.html', username=newUsername, email=newEmail)
             else:
                 # Изменение данных без пароля
                 oldDataUser.changing_profile(username=newUsername, email=newEmail)
                 current_user.username = newUsername
                 current_user.email = newEmail
-                flash('Изменения успешно применены.')
+                flash('Изменения успешно применены.', 'info')
                 return redirect(url_for('profile'))
         else:
-            flash('Введенный адрес электронной почты уже зарегистрирован в системе.')
+            flash('Введенный адрес электронной почты уже зарегистрирован в системе.', 'error')
     return render_template('editProfile.html', username=username, email=email)
 
 
@@ -200,6 +200,21 @@ def infoСamera(camera, idCamera, idStream):
     else:
         return f'<h1>Ошибка:\n{dict_req}</h1>'
 
+@app.route('/scheduledEvents', methods=["GET", "POST"])
+def scheduledEvents():
+    if request.method == 'GET':
+        eventsInDb = action_planner.get_tasks()
+        return render_template('scheduledEvents.html', events=eventsInDb)
+    else:
+        # TODO: функции удаления триггера + добавить ее в DS!
+        dictIds = request.json
+        req = requests.post('http://data_service_sm:3000/deleteEvents', json=dictIds)
+        if req.status_code == 200:
+            dict_req = json.loads(req.text)
+            return jsonify({'statusCode': 201, 'res': dict_req})
+        else:
+            return jsonify({'statusCode': 500, 'res': f'Ошибка! {res}'})
+
 @app.route('/scheduledActions/<idCamera>', methods=["GET"])
 def scheduledActions(idCamera):
     # TODO: 2 страницы. 1) страница с одной задачей 2) с задачами, если их несколько на одной камере
@@ -210,6 +225,25 @@ def setAction():
     data = request.form
     action_planner.add_task(data)
     return redirect(url_for('index'))
+
+@app.route('/managingRoles', methods=["GET", "POST"])
+def managingRoles():
+    if request.method == 'GET':
+        req = requests.get('http://data_service_sm:3000/userRoles')
+        if req.status_code == 200:
+            dict_req = json.loads(req.text)
+            return render_template('managingRoles.html', users=dict_req['users'])
+        else:
+            return '<h1>Произошла ошибка при обращении к базе данных1</h1>'
+    else:
+        jsonAction = request.json
+        req = requests.post('http://data_service_sm:3000/changeRoles', json=jsonAction)
+        if req.status_code == 200:
+            dict_req = json.loads(req.text)
+            return jsonify({'statusCode': 201, 'res': dict_req})
+        else:
+            return jsonify({'statusCode': 500, 'res': f'Ошибка! {res}'})
+
 
 def background_thread(ids):
     while True:

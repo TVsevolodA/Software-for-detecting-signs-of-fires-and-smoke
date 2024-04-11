@@ -52,6 +52,22 @@ module.exports= class User{
         return (await this.pool.query("SELECT role FROM users WHERE user_id = $1;", [duty])).rows[0].role;
     }
 
+    async getUserRoles() {
+        return (await this.pool.query("SELECT user_id, username, role FROM users;")).rows;
+    }
+
+    async changeRoles(action, usersId) {
+        const arrUsersId = Array.from(usersId).join(', ');
+        const res = `{${arrUsersId}}`;
+        if (action !== 'opposite') {
+            const newRole = action === 'allDispatchers' ? 'dispatcher' : 'administrator';
+            await (this.pool.query(`UPDATE users SET role = $1 WHERE user_id = ANY ($2);`, [newRole, res]));
+        }
+        else {
+            await (this.pool.query(`UPDATE users SET role = CASE WHEN role = 'dispatcher' THEN 'administrator' ELSE 'dispatcher' END WHERE user_id = ANY ($1);`, [res]));
+        }
+    }
+
     async searchSystemUser() {
         return (await this.pool.query("SELECT user_id FROM users WHERE role = 'system';")).rows[0].user_id;
     }

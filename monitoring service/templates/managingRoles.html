@@ -1,0 +1,339 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>managing roles</title>
+    <!-- BootStrap -->
+    <link href=" https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet" >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+      i { color: darkorange; }
+      main {
+        display: flex;
+        align-items: flex-start;
+        padding: 2% 5%;
+      }
+      #fieldSearch {
+        border-radius: 5px;
+        border: 1px solid black;
+        margin-bottom: 5%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+      }
+      #search { padding: 2% 0% 2% 5%; }
+      #buttonSearch, #search {
+        border: none;
+        outline: none;
+        background: none;
+      }
+      #systemSearch {
+        padding: 1%;
+        height: min-content;
+        margin-right: 1.5%;
+      }
+      .list-group-item {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      .list-group { width: 100%; }
+      #parameter, #systemSearch { border: 1px solid gray; }
+      input[type='checkbox'] {
+        width: 20px;
+        height: 20px;
+        margin-right: 5%;
+      }
+      td {
+        font-weight: 400;
+        font-size: 17px;
+        font-style: normal;
+        font-stretch: normal;
+      }
+      #changeRolesBlock {
+        display: none;
+        justify-content: center;
+    }
+  </style>
+  </head>
+  <body>
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('index')}}">Главная</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('managingRoles')}}">Роли</a></li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{{url_for('profile')}}">
+                <i class="bi bi-person-circle h1"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Выберить действие для выбранных элементов</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="action" value="allAdministrators" id="allAdministrators"/>
+                <label class="form-check-label" for="allAdministrators">Повысить права до администратора</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="action" value="allDispatchers" id="allDispatchers"/>
+                <label class="form-check-label" for="allDispatchers">Понизить права до диспетчера</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="action" value="opposite" id="opposite" checked/>
+                <label class="form-check-label" for="opposite">Сменить роль на противоположную</label>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
+              <button type="button" class="btn btn-primary" onclick="gettingAction()">Применить</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="resultWindow" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="serverResponse"></h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="location.reload()"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <form action="" id="systemSearch" onSubmit="return false;">
+        <div id="fieldSearch">
+          <div>
+            <input type="text" id="search" placeholder="Роль или ФИО сотрудника" onkeyup="searchMatches(event)">
+          </div>
+          <div style="padding-left: 2.5%;">
+            <button type="button" id="buttonSearch">
+              <i class="fas fa-magnifying-glass"></i>
+            </input>
+          </div>
+        </div>
+        <div id="parameter" class="input-group mb-3">
+          <ul class="list-group list-group-flush">
+            <span class="input-group-text">Роли</span>
+            <li class="list-group-item list-group-item-action">
+              <input type="checkbox" class="form-check-input me-1 status" value="Диспетчер" aria-label="..." onclick="filtering(1, 'status')" />
+              Только диспетчеры
+            </li>
+            <li class="list-group-item list-group-item-action">
+              <input type="checkbox" class="form-check-input me-1 status" value="Администратор" aria-label="..." onclick="filtering(1, 'status')" />
+              Только администраторы
+            </li>
+          </ul>
+        </div>
+        <div id="changeRolesBlock">
+            <button type="button" class="btn btn-primary" onclick="changeRoles()">Изменить роли</button>
+        </div>
+      </form>
+      <table id="dataTable" class="table table-hover table-bordered caption-top sortable">
+        <caption>Управление ролями пользователей</caption>
+        <thead>
+          <tr>
+            <th valign="middle" style="text-align: center;">ФИО сотрудника</th>
+            <th valign="middle" style="text-align: center;">Роль</th>
+          </tr>
+        </thead>
+        <!-- <tbody>
+            <tr id="1" onclick="addHighlighted(this)">
+                <td>Иванов</td>
+                <td id="roleUser1">Администратор</td>
+            </tr>
+            <tr id="2" onclick="addHighlighted(this)">
+                <td>Сидоров</td>
+                <td id="roleUser2">Диспетчер</td>
+            </tr>
+            <tr id="3" onclick="addHighlighted(this)">
+                <td>Петров</td>
+                <td id="roleUser3">Администратор</td>
+            </tr>
+            <tr id="4" onclick="addHighlighted(this)">
+                <td>Семенов</td>
+                <td id="roleUser4">Диспетчер</td>
+            </tr>
+        </tbody> -->
+      </table>
+    </main>
+    <!-- BootStrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <!-- Сортировка таблицы -->
+    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+      //@ts-check
+      let selectionWindow = new bootstrap.Modal(document.getElementById('staticBackdrop'));
+      let resultWindow = new bootstrap.Modal(document.getElementById('resultWindow'));
+
+      const listAction = new Map([
+        ['allAdministrators', (x => 'Администратор')],
+        ['allDispatchers', (x => 'Диспетчер')],
+        ['opposite', (x => x === 'Администратор' ? 'Диспетчер' : 'Администратор')]
+      ]);
+
+
+      /// Сортировка
+      let table = document.getElementById('dataTable');
+      let tbody = document.createElement('tbody');
+      table.appendChild(tbody);
+
+      const users = '{{ users|tojson }}';
+      const data = JSON.parse(users);
+      for (let objUser in data)
+      {
+        const stringUser = JSON.stringify(data[objUser]);
+        const user = JSON.parse(stringUser);
+        if (user.role !== 'system') {
+            const user_role = user.role === 'dispatcher' ? 'Диспетчер' : 'Администратор';
+            tbody.innerHTML += `
+            <tr id="${user.user_id}" onclick="addHighlighted(this)">
+                <td>${user.username}</td>
+                <td id="roleUser${user.user_id}">${user_role}</td>
+            </tr>
+            `;
+        }
+      }
+      
+      // Выделение нескольких пользователей
+      let selectedCells = new Set();
+      function addHighlighted(el) {
+        el.className = el.className === "table-primary" ? "" : "table-primary";
+        const id = Number(el.id);
+        const res_search = selectedCells.has(id);
+        if (res_search) selectedCells.delete(id);
+        else selectedCells.add(id);
+
+        if (document.getElementsByClassName('table-primary').length > 0) {
+            document.getElementById('changeRolesBlock').style.display = 'flex';
+        }
+        else {
+            document.getElementById('changeRolesBlock').style.display = 'none';
+        }
+     }
+
+     // Отображение информации о необходимых действиях для смены ролей
+     function changeRoles() {
+      selectionWindow.show();
+     }
+
+     /// Получение выбранного действия для ролей + отправка данных на сервер для последующей обработки
+     function gettingAction() {
+      const actions = document.getElementsByName('action');
+      let typeAction;
+      for (let i = 0; i < actions.length; i++) {
+        if (actions[i].checked) {
+          typeAction = actions[i].value;
+          break;
+        }
+      }
+      sendChangesToServer(typeAction);
+     }
+
+     /// Отправка и получение данных с сервера
+     function sendChangesToServer(act) {
+      console.log(`Будем отправлять ${selectedCells}`);
+      let xhr = new XMLHttpRequest();
+              xhr.open('POST', "{{ url_for('managingRoles') }}");
+              xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+              xhr.responseType = 'json';
+              xhr.send(JSON.stringify({'typeAction': act, 'usersId': Array.from(selectedCells)}));
+              xhr.onload = () => {
+                let responseObj = xhr.response;
+                selectionWindow.hide();
+                if (responseObj.statusCode === 201) {
+                  document.getElementById('serverResponse').innerHTML = 'Изменения успешно применены.';
+                  selectedCells.forEach((value, valueAgain, set) => {
+                    let currentAction = listAction.get(act);
+                    let userRole = document.getElementById(`roleUser${Number(value)}`);
+                    userRole.innerHTML = currentAction(userRole.innerHTML);
+                  });
+                  // selectedCells.clear();
+                  // let highlightedCells = document.getElementsByClassName('table-primary');
+                  // for (let i = 0; i < highlightedCells.length; i++) {
+                  //   highlightedCells[i].className = '';
+                  // }
+                }
+                else {
+                  document.getElementById('serverResponse').innerHTML = 'Произошла ошибка при изменении данных, повторите попытку.';
+                }
+                resultWindow.show();
+              };
+     }
+
+      // Фильтрация
+      const tr = table.getElementsByTagName('tr');
+      function filtering(indexParameter, titleParameter) {
+        let inputStatus = document.getElementsByClassName(titleParameter);
+        let arrValueChecked = new Map();
+        for (let i = 0; i < inputStatus.length; i++) {
+          arrValueChecked.set(inputStatus[i].value, inputStatus[i].checked);
+        }
+        const values = new Set(arrValueChecked.values());
+        if (values.size === 1) displayRows();
+        else {
+          arrValueChecked.forEach((value, key, map) => {
+            key = key.toUpperCase();
+            if (value) {
+              for (let i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName('td')[indexParameter];
+                if (td) {
+                  txtValue = td.innerText.toUpperCase();
+                  if (txtValue.indexOf(key) > -1) displayRows(i);
+                  else tr[i].style.display = "none";
+                }
+              }
+            }
+          });
+        }
+      }
+
+      /// Отображение необходимых полей
+      function displayRows(numberRows = 'all') {
+        if (numberRows === 'all') {
+          for (i = 0; i < tr.length; i++) {
+            tr[i].style.display = "";
+          }
+        }
+        else tr[Number(numberRows)].style.display = "";
+      }
+
+      /// Поле поиска
+      function searchMatches(event) {
+        const valueSearch = document.getElementById('search').value.toUpperCase();
+
+        for (let i = 0; i < tr.length; i++) {
+          tdUserName = tr[i].getElementsByTagName('td')[0];
+          tdRole = tr[i].getElementsByTagName('td')[1];
+          if (tdUserName && tdRole) {
+            const txtUserName = tdUserName.innerText.toUpperCase();
+            const txtRole = tdRole.innerText.toUpperCase();
+            if (txtUserName.indexOf(valueSearch) > -1) displayRows(i);
+            else if (txtRole.indexOf(valueSearch) > -1) displayRows(i);
+            else tr[i].style.display = "none";
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

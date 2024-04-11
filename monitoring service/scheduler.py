@@ -22,7 +22,7 @@ class Scheduler():
         self.get_saved_triggers()
 
     def get_saved_triggers(self):
-        req = requests.get('http://data_service_sm:3000/getEventTriggers')
+        req = self.get_tasks()
         triggers = json.loads(req.text)
         for trigger in triggers:
             self.add_task(trigger, availability_in_db=True)
@@ -56,8 +56,10 @@ class Scheduler():
         return tuple(args_action[action])
 
     def get_tasks(self):
-        # TODO: получение списка событий из БД
-        pass
+        """
+        Получение списка триггеров из БД
+        """
+        return requests.get('http://data_service_sm:3000/getEventTriggers')
 
     def get_tasks(self, id):
         # TODO: получение события из БД

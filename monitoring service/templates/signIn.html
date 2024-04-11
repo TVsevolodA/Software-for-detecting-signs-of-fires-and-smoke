@@ -30,6 +30,10 @@
         #titlePage {
             margin-bottom: 5%;
         }
+        .error {
+            color: red;
+            font-size: 20px;
+        }
     </style>
   </head>
   <body>
@@ -44,13 +48,13 @@
             <input type="password" required placeholder="Пароль" id="password" name="password" class="form-control" />
             <div class="invalid-feedback" id="passwordLabel">Пожалуйста, введите пароль.</div>
         </div>
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    {% for message in messages %}
-                        {{ message }}
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{{ category }} mb-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <div>
             <input type="submit" class="btn btn-primary btn-block mb-3" value="Войти">
         </div>

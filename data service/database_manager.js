@@ -111,6 +111,20 @@ function profileUpdate(request, response) {
     response.status(200).json({"result": "Данные о пользователе успешно обновлены"});
 }
 
+async function getListUsersWithRoles(request, response) {
+    let userObject = User.systemUser(pool);
+    const users = await userObject.getUserRoles();
+    response.status(200).json({"users": users});
+}
+
+async function changeRoles(request, response) {
+    const typeAction = request.body.typeAction;
+    const usersId = request.body.usersId;
+    let userObject = User.systemUser(pool);
+    await userObject.changeRoles(typeAction, usersId);
+    response.status(200).json({"result": "Изменения успешно применены."});
+}
+
 async function saveRecord(msg) {
     // TODO: Для отладки
     message = msg;
@@ -289,6 +303,8 @@ module.exports = {
     getUserByLogin,
     registerUser,
     profileUpdate,
+    getListUsersWithRoles,
+    changeRoles,
     saveRecord,
     getRecord,
     registerCamera,

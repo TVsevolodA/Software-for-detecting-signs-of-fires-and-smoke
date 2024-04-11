@@ -40,7 +40,7 @@
                 <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('index')}}">Главная</a></li>
                 <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
                 <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
-                <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Роли</a></li>
+                <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('managingRoles')}}">Роли</a></li>
             </ul>
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -76,9 +76,9 @@
                     <select id="action" name="action" class="form-select">
                         <option value="generateReport">Сформировать отчет (с одной камеры)</option>
                         <option value="collectStatisticsCameras">Собрать статистику с камер (со всех камер)</option>
-                        <option value="collectStatisticsServer">Собрать статистику сервера (log)</option>
+                        <!-- <option value="collectStatisticsServer">Собрать статистику сервера (log)</option>
                         <option value="checkingSystem">Проверка системы (проверка доступности камер)</option>
-                        <option value="notify">Оповестить</option>
+                        <option value="notify">Оповестить</option> -->
                     </select>
                 </div>
             </div>

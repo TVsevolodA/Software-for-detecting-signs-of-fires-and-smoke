@@ -35,28 +35,21 @@ services:
       - 3000:3000
 
   # NodeJS
-  # reportingService:
-  #   image: reporting_service_sm
-  #   container_name: reporting_service_sm
-  #   build: "./reporting service"
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - broker
-  #   ports:
-  #     - 4000:4000
+  reportingService:
+    image: reporting_service_sm
+    container_name: reporting_service_sm
+    build: "./reporting service"
+    env_file:
+      - .env
+    depends_on:
+      - broker
+    ports:
+      - 4000:4000
   
   # Python
   monitoringService:
-    # monitoring_service_sm
-    # monitoring-template
     image: monitoring-template
     container_name: monitoring_service_sm
-    # build: "./monitoring service"
-    # develop:
-    #   watch:
-    #     - action: rebuild
-    #       path: "./"
     env_file:
       - monitoring service/.env
     # depends_on:

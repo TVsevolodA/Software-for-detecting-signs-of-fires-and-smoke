@@ -37,7 +37,7 @@ class User(UserMixin):
             'password_hash': self.password_hash,
             'role': self.role
         }
-        requests.get('http://data_service_sm:3000/registerUser', json={'user_json': user_json})
+        requests.post('http://data_service_sm:3000/registerUser', json={'user_json': user_json})
 
     def changing_profile(self, username=None, email=None):
         self.username = username
@@ -49,7 +49,7 @@ class User(UserMixin):
             'password_hash': self.password_hash,
             'role': self.role
         }
-        requests.get('http://data_service_sm:3000/profileUpdate', json={'modifiedDataUser': modifiedDataUser})
+        requests.post('http://data_service_sm:3000/profileUpdate', json={'modifiedDataUser': modifiedDataUser})
 
     def get_id(self):
         return self.user_id

@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>eventData</title>
+    <!-- BootStrap -->
+    <link href=" https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet" >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        main {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-around;
+          align-items: start;
+        }
+        footer {
+          text-align: center;
+        }
+        .informationBlocks {
+          width: 40%;
+          padding: 35px;
+          border-radius: 10%;
+          border: 2px solid orange;
+        }
+        #deleteButton {
+          margin: 3% 0%;
+          min-width: 50%;
+          height: 50px;
+        }
+        #titlePage {
+          width: 100%;
+          text-align: center;
+        }
+        legend {
+          text-align: center;
+        }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('index')}}">Главная</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('managingRoles')}}">Роли</a></li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{{url_for('profile')}}">
+                <i class="bi bi-person-circle h1"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <div id="titlePage">
+      <h1>Подробная информация о событии</h1>
+    </div>
+    <main>
+      <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <i id="iconMessage"></i>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="contextMessage" class="modal-body"></div>
+            <div class="modal-footer">
+              <input id="actionButton" type="button" class="btn btn-primary">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="infoBlockTrigger" class="informationBlocks">
+        <legend>Информация о событии</legend>
+        <div class="mb-3">
+          <label for="title" class="form-label">Название</label>
+          <textarea class="form-control" id="title" rows="3" readonly></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="description" class="form-label">Описание</label>
+          <textarea class="form-control" id="description" rows="3" readonly></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="action" class="form-label">Действие</label>
+          <input type="text" class="form-control" id="action" readonly>
+        </div>
+        <div class="mb-3">
+          <label for="recurring_event" class="form-label">Тип события</label>
+          <input type="text" class="form-control" id="recurring_event" readonly>
+        </div>
+        <div class="mb-3">
+          <label for="date_event" class="form-label">Дата события</label>
+          <input type="datetime-local" class="form-control" id="date_event" readonly>
+        </div>
+        <div class="mb-3">
+          <label for="frequency" class="form-label">Периодичность</label>
+          <input type="text" class="form-control" id="frequency" readonly>
+        </div>
+      </div>
+      <div id="infoBlockCamera" class="informationBlocks">
+        <div id="specificCamera">
+          <legend>Информация о камере</legend>
+          <div class="mb-3">
+            <label for="nameCamera" class="form-label">Название</label>
+            <input type="text" class="form-control" id="nameCamera" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="urlAddress" class="form-label">URL-адрес</label>
+            <input type="url" class="form-control" id="urlAddress" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="address" class="form-label">Адрес</label>
+            <input type="text" class="form-control" id="address" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="coordinates" class="form-label">Координаты</label>
+            <input type="text" class="form-control" id="coordinates" readonly>
+          </div>
+        </div>
+        <div id="multipleCameras">
+          <legend>Информация о камерах</legend>
+          <div class="mb-3">
+            <p>Событие собирает данные с нескольких камер. Для получения более подробной информации по каждой конкретной камере, обращайтесь по прямой ссылке со страницы камер.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteTrigger()">Удалить событие</button>
+    </footer>
+    <!-- BootStrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script>
+      //@ts-check
+      let myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'));
+      const actions = new Map([
+        ['generateReport', 'Формирование отчета по одной камере'],
+        ['collectStatisticsCameras', 'Формирование отчета по всем камерам в системе'],
+      ]);
+      const ev = '{{ event|tojson }}';
+      const trigger = JSON.parse(ev);
+      const recurring_event = trigger.recurring_event === 'f' ? 'Единоразовое' : 'Повторяющееся';
+      const action = actions.get(trigger.action);
+
+      if (trigger.action === 'generateReport') {
+        document.getElementById('multipleCameras').style.display = 'none';
+      }
+      else {
+        document.getElementById('specificCamera').style.display = 'none';
+      }
+
+      document.getElementById('title').innerHTML = trigger.title;
+      document.getElementById('description').innerHTML = trigger.description;
+      document.getElementById('recurring_event').value = recurring_event;
+      document.getElementById('date_event').value = trigger.date_event === null ? '-' : trigger.date_event;
+      document.getElementById('frequency').value = trigger.frequency === null ? '-' : `${trigger.frequency} ${trigger.time_interval_frequency}`;
+      document.getElementById('action').value = action;
+
+      document.getElementById('nameCamera').value = trigger.name_camera;
+      document.getElementById('urlAddress').value = trigger.url_address;
+      document.getElementById('coordinates').value = `Долгота: ${trigger.longitude}; Широта: ${trigger.latitude}`;
+      document.getElementById('address').value = trigger.address;
+
+
+      function createMessage(icons, resServer, titleButton) {
+        let icon = document.getElementById('iconMessage');
+        icon.className = `bi ${icons} h3`;
+
+        let message = document.getElementById('contextMessage');
+        message.innerHTML = resServer.res;
+
+        let actionButton = document.getElementById('actionButton');
+        actionButton.value = titleButton;
+        actionButton.addEventListener("click", function(e) {
+          if (resServer.statusCode === 201) {
+            window.location.href = "{{ url_for('scheduledEvents') }}";
+          }
+          else {            
+            myModal.hide();
+          }
+        }, false);
+      }
+
+      function deleteTrigger() {
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', "{{ url_for('eventData', idEvent='value') }}".replace('value', trigger.trigger_id));
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+        xhr.responseType = 'json';
+        xhr.send();
+        xhr.onload = () => {
+          let responseObj = xhr.response;
+          myModal.show();
+          if (responseObj.statusCode === 201) {
+            createMessage('bi-check2-circle text-success', responseObj, 'Вернуться к списку событий.');
+          }
+          else {
+            createMessage('bi-x-circle text-danger', responseObj, 'Произошла ошибка, повторите попытку позже.');
+          }
+        };
+      }
+    </script>
+  </body>
+</html>

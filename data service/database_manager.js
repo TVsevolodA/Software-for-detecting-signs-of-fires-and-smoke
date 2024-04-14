@@ -182,6 +182,20 @@ async function getEventTriggers(request, response) {
     response.status(200).json(triggers);
 }
 
+async function getEventTriggerById(request, response) {
+    const idEvent = request.body.idEvent;
+    let triggerObject = Trigger.emptyTrigger(pool);
+    const trigger = await triggerObject.getEventById(idEvent);
+    response.status(200).json(trigger);
+}
+
+async function deleteEventTriggerById(request, response) {
+    const idEvent = request.body.idEvent;
+    let triggerObject = Trigger.emptyTrigger(pool);
+    await triggerObject.deleteEventById(idEvent);
+    response.status(200).json("Событие успешно удалено.");
+}
+
 
 /// Поиск записи по расписанию или времени
 // TODO: Сделать страницу под функцию! Проверить все комбинации: оба null, только один null, ни один не null.
@@ -305,6 +319,8 @@ module.exports = {
     profileUpdate,
     getListUsersWithRoles,
     changeRoles,
+    getEventTriggerById,
+    deleteEventTriggerById,
     saveRecord,
     getRecord,
     registerCamera,

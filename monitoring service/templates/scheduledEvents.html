@@ -78,10 +78,25 @@
       </nav>
     </header>
     <main>
+      <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <i id="iconMessage"></i>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="contextMessage" class="modal-body"></div>
+            <div class="modal-footer">
+              <input id="actionButton" type="button" class="btn btn-primary">
+            </div>
+          </div>
+        </div>
+      </div>
+
       <form action="" id="systemSearch" onSubmit="return false;">
         <div id="fieldSearch">
           <div>
-            <input type="text" id="search" placeholder="Параметры камер" onkeyup="searchMatches(event)">
+            <input type="text" id="search" placeholder="Наименование события" onkeyup="searchMatches(event)">
           </div>
           <div style="padding-left: 2.5%;">
             <button type="button" id="buttonSearch">
@@ -93,11 +108,11 @@
           <ul class="list-group list-group-flush">
             <span class="input-group-text">Тип собития</span>
             <li class="list-group-item list-group-item-action">
-                <input class="form-check-input" type="radio" name="action" value="recurring" id="recurring" onclick="filtering(1, 'recurring_event')"/>
+                <input class="form-check-input recurring_event" type="checkbox" name="action" value="Повторяющееся" id="recurring" onclick="filtering(1, 'recurring_event')"/>
                 <label class="form-check-label" for="recurring">Повторяющиеся</label>
             </li>
             <li class="list-group-item list-group-item-action">
-                <input class="form-check-input" type="radio" name="action" value="OneTimePayments" id="OneTimePayments" onclick="filtering(1, 'recurring_event')"/>
+                <input class="form-check-input recurring_event" type="checkbox" name="action" value="Единоразовое" id="OneTimePayments" onclick="filtering(1, 'recurring_event')"/>
                 <label class="form-check-label" for="OneTimePayments">Единовременные</label>
             </li>
           </ul>
@@ -106,11 +121,11 @@
           <ul class="list-group list-group-flush">
             <span class="input-group-text">Вид события</span>
             <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1" value="oneCamera" aria-label="..." onclick="filtering(2, 'action')" />
+              <input type="checkbox" class="form-check-input me-1 action" value="Формирование отчета по одной камере" aria-label="..." onclick="filtering(2, 'action')" />
               Отчет по одной камере
             </li>
             <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1" value="allCameras" aria-label="..." onclick="filtering(2, 'action')" />
+              <input type="checkbox" class="form-check-input me-1 action" value="Формирование отчета по всем камерам в системе" aria-label="..." onclick="filtering(2, 'action')" />
               Отчет по всем камерам
             </li>
           </ul>
@@ -121,11 +136,9 @@
         <thead>
           <tr>
             <th valign="middle" style="text-align: center;">Наименование</th>
-            <th valign="middle" style="text-align: center;">Описание</th>
             <th valign="middle" style="text-align: center;">Тип события</thё>
-            <th valign="middle" style="text-align: center;">Дата срабатывания</th>
-            <th valign="middle" style="text-align: center;">Частота срабатывания</th>
             <th valign="middle" style="text-align: center;">Событие</th>
+            <th valign="middle" style="text-align: center;">Удалить</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -138,18 +151,78 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script>
       //@ts-check
+      let myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'));
       /// Сортировка
       let table = document.getElementById('dataTable');
       let tbody = document.getElementsByTagName('tbody')[0];
+
+      const actions = new Map([
+        ['generateReport', 'Формирование отчета по одной камере'],
+        ['collectStatisticsCameras', 'Формирование отчета по всем камерам в системе'],
+      ]);
+
       const events = '{{ events|tojson }}';
       const data = JSON.parse(events);
-
       for (let objEvent in data)
       {
         const stringEvent = JSON.stringify(data[objEvent]);
         const event = JSON.parse(stringEvent);
-        event['name'];
-        tbody.innerHTML += ``;
+        const recurring_event = event['recurring_event'] === 'f' ? 'Единоразовое' : 'Повторяющееся';
+        const action = actions.get(event['action']);
+        tbody.innerHTML += `
+        <tr>
+          <td>
+            <a href="/eventData/${event['id_trigger']}">
+              ${event['title']}
+            </a>
+          </td>
+          <td>${recurring_event}</td>
+          <td>${action}</td>
+          <td>
+            <button type="button" class="btn btn-light" id="${event['id_trigger']}" onclick="deleteTrigger(this)">
+              <i class="bi bi-trash-fill fa-3x text-danger"></i>
+            </button>
+          </td>
+        </tr>
+        `;
+      }
+
+      function createMessage(icons, resServer, titleButton) {
+        let icon = document.getElementById('iconMessage');
+        icon.className = `bi ${icons} h3`;
+
+        let message = document.getElementById('contextMessage');
+        message.innerHTML = resServer.res;
+
+        let actionButton = document.getElementById('actionButton');
+        actionButton.value = titleButton;
+        actionButton.addEventListener("click", function(e) {
+          if (resServer.statusCode === 201) {
+            window.location.href = "{{ url_for('scheduledEvents') }}";
+          }
+          else {            
+            myModal.hide();
+          }
+        }, false);
+      }
+      
+      function deleteTrigger(el) {
+        el.id
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', "{{ url_for('scheduledEvents') }}");
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+        xhr.responseType = 'json';
+        xhr.send(JSON.stringify({'idEvent': el.id}));
+        xhr.onload = () => {
+          let responseObj = xhr.response;
+          myModal.show();
+          if (responseObj.statusCode === 201) {
+            createMessage('bi-check2-circle text-success', responseObj, 'Вернуться к списку событий.');
+          }
+          else {
+            createMessage('bi-x-circle text-danger', responseObj, 'Произошла ошибка, повторите попытку позже.');
+          }
+        };
       }
 
       // Фильтрация
@@ -192,18 +265,11 @@
       /// Поле поиска
       function searchMatches(event) {
         const valueSearch = document.getElementById('search').value.toUpperCase();
-
         for (let i = 0; i < tr.length; i++) {
-          thTitle = tr[i].getElementsByTagName('th')[0];
-          tdUrl = tr[i].getElementsByTagName('td')[0];
-          tdCity = tr[i].getElementsByTagName('td')[3];
-          if (thTitle && tdUrl && tdCity) {
-            const txtTitle = thTitle.innerText.toUpperCase();
-            const txtUrl = tdUrl.innerText.toUpperCase();
-            const txtCity = tdCity.innerText.toUpperCase();
+          tdTitle = tr[i].getElementsByTagName('td')[0];
+          if (tdTitle) {
+            const txtTitle = tdTitle.innerText.toUpperCase();
             if (txtTitle.indexOf(valueSearch) > -1) displayRows(i);
-            else if (txtUrl.indexOf(valueSearch) > -1) displayRows(i);
-            else if (txtCity.indexOf(valueSearch) > -1) displayRows(i);
             else tr[i].style.display = "none";
           }
         }

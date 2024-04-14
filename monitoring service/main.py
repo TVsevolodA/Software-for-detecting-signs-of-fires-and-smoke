@@ -203,17 +203,23 @@ def infoСamera(camera, idCamera, idStream):
 @app.route('/scheduledEvents', methods=["GET", "POST"])
 def scheduledEvents():
     if request.method == 'GET':
-        eventsInDb = action_planner.get_tasks()
+        responseEventsInDb = action_planner.get_tasks()
+        eventsInDb = json.loads(responseEventsInDb.text)
         return render_template('scheduledEvents.html', events=eventsInDb)
     else:
-        # TODO: функции удаления триггера + добавить ее в DS!
-        dictIds = request.json
-        req = requests.post('http://data_service_sm:3000/deleteEvents', json=dictIds)
-        if req.status_code == 200:
-            dict_req = json.loads(req.text)
-            return jsonify({'statusCode': 201, 'res': dict_req})
-        else:
-            return jsonify({'statusCode': 500, 'res': f'Ошибка! {res}'})
+        idEvent = request.json
+        res = action_planner.delete_task(idEvent['idEvent'])
+        return jsonify({'statusCode': 201, 'res': res})
+
+@app.route('/eventData/<idEvent>', methods=["GET", "POST"])
+def eventData(idEvent):
+    if request.method == 'GET':
+        eventData = action_planner.get_task(int(idEvent))
+        return render_template('eventData.html', event=eventData)
+    else:
+        res = action_planner.delete_task(idEvent)
+        return jsonify({'statusCode': 201, 'res': res})
+
 
 @app.route('/scheduledActions/<idCamera>', methods=["GET"])
 def scheduledActions(idCamera):

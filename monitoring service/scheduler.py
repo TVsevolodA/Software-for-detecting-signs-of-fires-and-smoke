@@ -61,13 +61,26 @@ class Scheduler():
         """
         return requests.get('http://data_service_sm:3000/getEventTriggers')
 
-    def get_tasks(self, id):
-        # TODO: получение события из БД
-        pass
+    def get_task(self, idEvent):
+        """
+        Получение триггера из БД
+        """
+        req = requests.get('http://data_service_sm:3000/getEventTriggerById', json={'idEvent': idEvent})
+        trigger = json.loads(req.text)
+        return trigger
 
     def set_task(self, id):
         # TODO: Изменить триггер (Возможно пока не делать)
         pass
+
+    def delete_task(self, idEvent):
+        """
+        Удаление триггера из БД
+        """
+        req = requests.post('http://data_service_sm:3000/deleteEventTriggerById', json={'idEvent': idEvent})
+        result = json.loads(req.text)
+        return result
+
 
     def __generate_report(self, idCamera):
         """

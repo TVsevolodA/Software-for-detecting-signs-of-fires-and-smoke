@@ -46,6 +46,8 @@ app.post('/registerUser', (request, response) => databaseManager.registerUser(re
 app.post('/profileUpdate', (request, response) => databaseManager.profileUpdate(request, response));
 app.get('/userRoles', (request, response) => databaseManager.getListUsersWithRoles(request, response));
 app.post('/changeRoles', (request, response) => databaseManager.changeRoles(request, response));
+app.get('/getEventTriggerById', (request, response) => databaseManager.getEventTriggerById(request, response));
+app.post('/deleteEventTriggerById', (request, response) => databaseManager.deleteEventTriggerById(request, response));
 
 
 app.get('/getEventTriggers', async (request, response) => await databaseManager.getEventTriggers(request, response));

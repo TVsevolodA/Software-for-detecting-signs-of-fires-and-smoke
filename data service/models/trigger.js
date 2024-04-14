@@ -8,7 +8,7 @@ module.exports= class Trigger{
         this.title = trigger_data.title;
         this.description = trigger_data.description;
         this.recurring_event = trigger_data.recurring_event;
-        this.date_event = trigger_data.location_id;
+        this.date_event = trigger_data.date_event;
         this.frequency = trigger_data.frequency;
         this.time_interval_frequency = trigger_data.timeIntervalFrequency;
         // this.duration = trigger_data.duration;
@@ -37,6 +37,32 @@ module.exports= class Trigger{
         return new Trigger(db, trigger_data);
     }
 
+    async getEventById(id) {
+        const triggerObjects = (await this.pool.query(`
+        SELECT * FROM triggers as t
+        JOIN cameras as c ON c.camera_id = t.idcamera
+        JOIN location_cameras as l ON c.camera_location = l.location_id
+        WHERE t.trigger_id = $1;
+        `, [id])).rows[0];
+        // const trigger = triggerObjects.rows.map(row => ({
+        //     id_trigger: row.trigger_id,
+        //     idCamera: String(row.idcamera),
+        //     title: row.title,
+        //     description: row.description,
+        //     recurring_event: row.recurring_event === false ? 'f' : 't',
+        //     date_event: row.date_event,
+        //     frequency: row.frequency,
+        //     timeIntervalFrequency: row.time_interval_frequency,
+        //     action: row.action,
+        //     nameCamera: row.name_camera,
+        //     urlAddress: row.url_address,
+        //     longitude: row.longitude,
+        //     latitude: row.latitude,
+        //     address: row.address,
+        // }));
+        return triggerObjects;
+    }
+
     async getListTriggers() {
         const triggerObjects = await this.pool.query('SELECT * FROM triggers;');
         const triggers = triggerObjects.rows.map(row => ({
@@ -56,6 +82,9 @@ module.exports= class Trigger{
     }
 
     async insertWithReturnId() {
+        if (this.date_event === '') {
+            this.date_event = null;
+        }
         return (await this.pool.query(`INSERT INTO triggers (
             idCamera,
             title,
@@ -78,5 +107,9 @@ module.exports= class Trigger{
                 // this.time_interval_duration,
                 this.action
             ]));
+    }
+
+    async deleteEventById(id) {
+        this.pool.query('DELETE FROM triggers WHERE trigger_id = $1', [id]);
     }
 }

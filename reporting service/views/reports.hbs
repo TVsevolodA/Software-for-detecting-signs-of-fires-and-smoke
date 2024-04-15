@@ -1,0 +1,228 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>infoСamera</title>
+    <!-- BootStrap -->
+    <link href=" https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet" >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+      i { color: darkorange; }
+      main {
+        display: flex;
+        align-items: flex-start;
+        padding: 2% 5%;
+      }
+      #fieldSearch {
+        border-radius: 5px;
+        border: 1px solid black;
+        margin-bottom: 5%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+      }
+      #search { padding: 2% 0% 2% 5%; }
+      #buttonSearch, #search {
+        border: none;
+        outline: none;
+        background: none;
+      }
+      #systemSearch {
+        padding: 1%;
+        height: min-content;
+        margin-right: 1.5%;
+      }
+      .list-group-item{
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      .selection {
+        display: flex;
+        align-items: start;
+        justify-content: space-evenly;
+      }
+      .list-group { width: 100%; }
+      .parameter, #systemSearch { border: 1px solid gray; }
+      input[type='checkbox'] {
+        width: 20px;
+        height: 20px;
+        margin-right: 5%;
+      }
+      td {
+        font-weight: 400;
+        font-size: 17px;
+        font-style: normal;
+        font-stretch: normal;
+      }
+      #resultSelection {
+        width: 75%;
+      }
+      img {
+        width: 100%;
+        height: 100%;
+      }
+  </style>
+  </head>
+  <body>
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5050">Главная</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5050/managingRoles">Роли</a></li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="http://localhost:5050/profile">
+                <i class="bi bi-person-circle h1"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <form action="" id="systemSearch" onSubmit="return false;">
+        <div id="fieldSearch">
+          <div>
+            <input type="text" id="search" placeholder="Дата или ФИО дежурного" onkeyup="searchMatches(event)">
+          </div>
+          <div style="padding-left: 2.5%;">
+            <button type="button" id="buttonSearch">
+              <i class="fas fa-magnifying-glass"></i>
+            </input>
+          </div>
+        </div>
+        <div class="input-group mb-3 parameter">
+          <ul class="list-group list-group-flush">
+            <span class="input-group-text">Статус</span>
+            <li class="list-group-item list-group-item-action">
+              <input type="checkbox" class="form-check-input me-1 event_based" value="Обработанные" aria-label="..." onclick="filtering(1, 'event_based')" />
+              Обработанные
+            </li>
+            <li class="list-group-item list-group-item-action">
+              <input type="checkbox" class="form-check-input me-1 event_based" value="Необработанные" aria-label="..." onclick="filtering(1, 'event_based')" />
+              Необработанные
+            </li>
+          </ul>
+        </div>
+        <div class="input-group mb-3 parameter">
+            Блок с полями ввода пограничных дат!
+        </div>
+        <div class="input-group mb-3 parameter">
+            Поиск по названию камеры!
+        </div>
+      </form>
+      <div id="resultSelection"></div>
+    </main>
+    <!-- BootStrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script>
+      //@ts-check
+      const reports = {{{reports}}};
+      let resultSelection = document.getElementById('resultSelection');
+      //document.getElementsByTagName('img')[0].src = `data:image/png; base64, ${reports[0].captured_image}`;
+
+
+      for (let report of reports)
+      {
+        const buttonArrange = !report.report_compiled ? 
+        `<div class="mb-3" id="arrange_report_id">
+          <button type="button" class="btn btn-warning" id="${report.report_id}" onclick="arrange(this)">Закончить оформление</button>
+        </div>`
+        :
+        `<div class="mb-3" id="arrange_report_id">
+          <a href="/getReportById/${report.report_id}" class="link-info link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Перейти к отчету</a>
+        </div>`;
+        resultSelection.innerHTML +=
+        `<div class="card mb-3" id="block_${report.report_id}">
+          <div class="row g-0">
+            <div class="col-md-5" id="picture">
+              <img src="data:image/png; base64, ${report.captured_image}" alt="Не удалось получить доступ к камере" class="rounded-start">
+            </div>
+            <div class="col-md-7" id="information">
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="dateTimeIncident" class="form-label">Время</label>
+                  <input type="text" class="form-control" id="dateTimeIncident" readonly value="${report.datetime}">
+                </div>
+                <div class="mb-3">
+                  <label for="placeIncident" class="form-label">Место</label>
+                  <input type="text" class="form-control" id="placeIncident" readonly value="${report.address}">
+                </div>
+                <div class="mb-3">
+                  <label for="signsIncident" class="form-label">Обнаруженные признаки</label>
+                  <textarea class="form-control" id="signsIncident" rows="2" readonly>${report.type_event}</textarea>
+                </div>
+                ${buttonArrange}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }
+
+    //   // Фильтрация
+    //   const tr = table.getElementsByTagName('tr');
+    //   function filtering(indexParameter, titleParameter) {
+    //     let inputStatus = document.getElementsByClassName(titleParameter);
+    //     let arrValueChecked = new Map();
+    //     for (let i = 0; i < inputStatus.length; i++) {
+    //       arrValueChecked.set(inputStatus[i].value, inputStatus[i].checked);
+    //     }
+    //     const values = new Set(arrValueChecked.values());
+    //     if (values.size === 1) displayRows();
+    //     else {
+    //       arrValueChecked.forEach((value, key, map) => {
+    //         key = key.toUpperCase();
+    //         if (value) {
+    //           for (let i = 0; i < tr.length; i++) {
+    //             td = tr[i].getElementsByTagName('td')[indexParameter];
+    //             if (td) {
+    //               txtValue = td.innerText.toUpperCase();
+    //               if (txtValue.indexOf(key) > -1) displayRows(i);
+    //               else tr[i].style.display = "none";
+    //             }
+    //           }
+    //         }
+    //       });
+    //     }
+    //   }
+
+    //   /// Отображение необходимых полей
+    //   function displayRows(numberRows = 'all') {
+    //     if (numberRows === 'all') {
+    //       for (i = 0; i < tr.length; i++) {
+    //         tr[i].style.display = "";
+    //       }
+    //     }
+    //     else tr[Number(numberRows)].style.display = "";
+    //   }
+
+    //   /// Поле поиска
+    //   function searchMatches(event) {
+    //     const valueSearch = document.getElementById('search').value.toUpperCase();
+
+    //     for (let i = 0; i < tr.length; i++) {
+    //       thTitle = tr[i].getElementsByTagName('th')[0];
+    //       tdUrl = tr[i].getElementsByTagName('td')[0];
+    //       tdCity = tr[i].getElementsByTagName('td')[3];
+    //       if (thTitle && tdUrl && tdCity) {
+    //         const txtTitle = thTitle.innerText.toUpperCase();
+    //         const txtUrl = tdUrl.innerText.toUpperCase();
+    //         const txtCity = tdCity.innerText.toUpperCase();
+    //         if (txtTitle.indexOf(valueSearch) > -1) displayRows(i);
+    //         else if (txtUrl.indexOf(valueSearch) > -1) displayRows(i);
+    //         else if (txtCity.indexOf(valueSearch) > -1) displayRows(i);
+    //         else tr[i].style.display = "none";
+    //       }
+    //     }
+    //   }
+    </script>
+  </body>
+</html>

@@ -103,7 +103,6 @@
           </ul>
         </div>
         <div id="parameter" class="input-group mb-3">
-          <!-- TODO: Не обязательно. Динамически создавать. Для этого нужно получать список городов! -->
           <ul class="list-group list-group-flush">
             <span class="input-group-text">Местоположение</span>
             <li class="list-group-item list-group-item-action">
@@ -142,7 +141,6 @@
       let tbody = document.createElement('tbody');
       table.appendChild(tbody);
 
-      // const infoCameras = '[{"name": "Xiaomi_Smart_Camera", "url": "http://camera:5040", "status": "Работает", "longitude": 45.980185, "latitude": 51.529657, "address": "г.Саратов,ул.Политехническая,77"}, {"name": "Hi_Watch", "url": "http://hi_watch:5030", "status": "Работает", "longitude": 46.02105074284403, "latitude": 51.53410530670002, "address": "Саратов, улица имени В.И. Чапаева, 61"}]';
       const infoCameras = '{{ infoCameras|tojson }}';
       const data = JSON.parse(infoCameras);
 
@@ -158,7 +156,6 @@
         linkCamera.href = `/infoСamera/cameras/${camera['name']}/${camera['id']}/${iter++}`;
         linkCamera.innerHTML = camera['name'];
         let nameCamera = document.createElement('th');
-        // nameCamera.innerHTML = camera['name'];
         blockTr.appendChild(nameCamera);
         nameCamera.appendChild(linkCamera);
 
@@ -169,7 +166,6 @@
         let statusCamera = document.createElement('td');
         statusCamera.style.fontWeight = 'bold';
         statusCamera.style.color = camera['status'] === 'Работает' ? '#00ff00': '#ff4e33';
-        // statusCamera.style.background = camera['status'] === 'Работает' ? '#00ff00': '#ff4e33';
         statusCamera.innerHTML = camera['status'];
         blockTr.appendChild(statusCamera);
 
@@ -180,8 +176,6 @@
         let addressCamera = document.createElement('td');
         addressCamera.innerHTML = camera['address'];
         blockTr.appendChild(addressCamera);
-
-        // TODO: Не обязательно. Функция удаления камеры!
 
         tbody.appendChild(blockTr);
       }

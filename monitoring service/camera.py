@@ -42,6 +42,7 @@ class VideoCamera(object):
     
     def __del__(self):
         try:
+            # self.producer.delete_topics([self.dict_camera['name']])
             self.cap.release()
         except AttributeError:
             pass

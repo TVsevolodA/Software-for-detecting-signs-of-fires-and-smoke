@@ -34,3 +34,13 @@ class camerasBuilder(object):
     def addCameraStream(self, dataCamera):
         self.__creature(dataCamera)
         self.cameras.append(dataCamera)
+
+    # def deleteCameraStream(self, camera_id):
+    #     self.__creature(dataCamera)
+    #     cameraDeleted = None
+    #     for cam in self.cameras:
+    #         if cam['index'] == camera_id:
+    #             cameraDeleted = cam
+    #     if cameraDeleted is not None:
+    #         self.cameras.remove(cameraDeleted)
+    #         self.__VideoCameras.remove(cameraDeleted)

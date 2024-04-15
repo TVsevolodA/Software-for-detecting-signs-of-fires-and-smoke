@@ -35,6 +35,15 @@ class Producer(object):
         except  Exception as e:
             print(e)
 
+    def delete_topics(self, topic_names):
+        try:
+            self.admin_client.delete_topics(topics=topic_names)
+            print("Топик успешно удален")
+        except UnknownTopicOrPartitionError as e:
+            print("Топика не существует")
+        except  Exception as e:
+            print(e)
+
     def send_message(self, topic, msg):
         msg = msg.encode('utf-8')
         future = self.producer.send(topic, value = msg)

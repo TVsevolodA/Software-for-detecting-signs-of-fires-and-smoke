@@ -31,7 +31,11 @@ app.get('/', (request, response) => {
 });
 
 
-app.post('/registerCamera', (request, response) => databaseManager.registerCamera(request, response));
+app.post('/registerCamera', async (request, response) => {
+  databaseManager.registerCamera(request, response);
+  await consumer.disconnect();
+  await run();
+});
 
 app.get('/infoCamera', (request, response) => databaseManager.infoCamera(request, response));
 

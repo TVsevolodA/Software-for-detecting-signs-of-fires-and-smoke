@@ -1,8 +1,6 @@
 //@ts-check
-/*
-TODO: Задачи сервиса формирования отчетов.
-1) Создание, редактирование и удаления отчета (просмотр через data service).
-*/
+const reportManager = require('./report_manager');
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
@@ -24,6 +22,10 @@ app.get('/', (request, response) => {
   response.json({ info: 'Сервис обработки отчетов' });
 });
 
+app.get('/getReportById/:id', (request, response) => reportManager.getReportById(request, response));
+app.get('/getReports',    (request, response) => reportManager.getReports(request, response));
+app.post('/createReport', (request, response) => reportManager.createReport(request, response));
+app.post('/updateReport', (request, response) => reportManager.updateReport(request, response));
 
 
 
@@ -32,25 +34,26 @@ app.get('/', (request, response) => {
 
 
 
-const { Kafka } = require("kafkajs");
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
-const clientId = process.env.KAFKA_CLIENT_ID;
-const brokers = [process.env.KAFKA_DEFAULT_BROKER];
-const topic = process.env.KAFKA_MOCKUP_TOPIC; // FIXME: топик будем получать из бд!
+// const { Kafka } = require("kafkajs");
+// const path = require('path');
+// require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
-const kafka = new Kafka({ clientId: clientId, brokers: brokers });
-const consumer = kafka.consumer({ groupId: clientId });
+// const clientId = process.env.KAFKA_CLIENT_ID;
+// const brokers = [process.env.KAFKA_DEFAULT_BROKER];
+// const topic = process.env.KAFKA_MOCKUP_TOPIC; // FIXME: топик будем получать из бд!
 
-async function run() {
-  await consumer.connect();
-  await consumer.subscribe({ topic: topic });
-  await consumer.run({
-    eachMessage: async ({ message }) => {
-      await console.log(`Сообщение из топика: ${message.value.toString()}`);
-    },
-  });
-};
+// const kafka = new Kafka({ clientId: clientId, brokers: brokers });
+// const consumer = kafka.consumer({ groupId: clientId });
 
-run();
+// async function run() {
+//   await consumer.connect();
+//   await consumer.subscribe({ topic: topic });
+//   await consumer.run({
+//     eachMessage: async ({ message }) => {
+//       await console.log(`Сообщение из топика: ${message.value.toString()}`);
+//     },
+//   });
+// };
+
+// run();

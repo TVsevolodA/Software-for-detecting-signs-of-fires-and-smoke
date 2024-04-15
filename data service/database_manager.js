@@ -68,12 +68,6 @@ async function addToDatabase(camera_data, host, response) {
     }
 }
 
-// TODO: Для отладки
-let message = '';
-function getRecord () {
-    return message;
-}
-
 async function getUserById(request, response) {
     const user_id = request.body.user_id;
     let userObject = User.systemUser(pool);
@@ -126,9 +120,6 @@ async function changeRoles(request, response) {
 }
 
 async function saveRecord(msg) {
-    // TODO: Для отладки
-    message = msg;
-
     // TODO: добавить передаваемое поле duty (дежурный), для оформления записи в отчете!
     const obj = JSON.parse(msg);
     let notificationObject = Notification.withoutId(pool, obj);

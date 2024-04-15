@@ -26,34 +26,3 @@ app.get('/getReportById/:id', (request, response) => reportManager.getReportById
 app.get('/getReports',    (request, response) => reportManager.getReports(request, response));
 app.post('/createReport', (request, response) => reportManager.createReport(request, response));
 app.post('/updateReport', (request, response) => reportManager.updateReport(request, response));
-
-
-
-
-
-
-
-
-
-// const { Kafka } = require("kafkajs");
-// const path = require('path');
-// require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
-
-// const clientId = process.env.KAFKA_CLIENT_ID;
-// const brokers = [process.env.KAFKA_DEFAULT_BROKER];
-// const topic = process.env.KAFKA_MOCKUP_TOPIC; // FIXME: топик будем получать из бд!
-
-// const kafka = new Kafka({ clientId: clientId, brokers: brokers });
-// const consumer = kafka.consumer({ groupId: clientId });
-
-// async function run() {
-//   await consumer.connect();
-//   await consumer.subscribe({ topic: topic });
-//   await consumer.run({
-//     eachMessage: async ({ message }) => {
-//       await console.log(`Сообщение из топика: ${message.value.toString()}`);
-//     },
-//   });
-// };
-
-// run();

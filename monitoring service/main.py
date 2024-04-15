@@ -223,7 +223,6 @@ def eventData(idEvent):
 
 @app.route('/scheduledActions/<idCamera>', methods=["GET"])
 def scheduledActions(idCamera):
-    # TODO: 2 страницы. 1) страница с одной задачей 2) с задачами, если их несколько на одной камере
     return render_template('scheduleActionIndividual.html', idCamera=idCamera)
 
 @app.route('/setAction', methods=["POST"])

@@ -1,11 +1,5 @@
 //@ts-check
 /*
-TODO: Задачи сервиса обработки данных.
-1) Поиск записей; +
-2) Получение отчетов; +
-3) (Возможно) Полноценный CRUD.
-*/
-/*
  [=========================================================]
  [                       Сервер                            ]
  [=========================================================]
@@ -67,18 +61,6 @@ app.get('/generateReports', async (request, response) => {
   const idCamera = request.body['idCamera'];
   await databaseManager.generateReports(idCamera);
   response.json({'status': 'Отчет успешно создан'});
-});
-
-// TODO: Рабочий вариант! Потом доработать до полноценноценной страницы просмотра данных с БД!
-app.get('/getFrame', (request, response) => {
-  let message = databaseManager.getRecord();
-  if (message.length !== 0) {
-    let obj = JSON.parse(message);
-    response.render("renderFrame.hbs", {Image: obj.Image});
-  }
-  else {
-    response.json({info: 'Все спокойно'});
-  }
 });
 
 /*

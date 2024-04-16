@@ -313,7 +313,6 @@ module.exports = {
     getEventTriggerById,
     deleteEventTriggerById,
     saveRecord,
-    getRecord,
     registerCamera,
     getListSources,
     infoCamera,

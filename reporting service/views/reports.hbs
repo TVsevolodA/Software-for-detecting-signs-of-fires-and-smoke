@@ -2,13 +2,14 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>infoСamera</title>
+    <title>infoReports</title>
     <!-- BootStrap -->
     <link href=" https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet" >
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <style>
       i { color: darkorange; }
+      form { max-width: 35%; }
       main {
         display: flex;
         align-items: flex-start;
@@ -24,8 +25,8 @@
         justify-content: center;
         align-items: center;
       }
-      #search { padding: 2% 0% 2% 5%; }
-      #buttonSearch, #search {
+      #beginDateTime, #endDateTime { padding: 2% 0% 2% 5%; }
+      #buttonSearch {
         border: none;
         outline: none;
         background: none;
@@ -46,7 +47,11 @@
         justify-content: space-evenly;
       }
       .list-group { width: 100%; }
-      .parameter, #systemSearch { border: 1px solid gray; }
+      .parameter, #systemSearch {
+        border: 1px solid gray;
+        border-radius: 10px;
+      }
+      .parameter { padding: 2%; }
       input[type='checkbox'] {
         width: 20px;
         height: 20px;
@@ -89,34 +94,38 @@
     </header>
     <main>
       <form action="" id="systemSearch" onSubmit="return false;">
-        <div id="fieldSearch">
-          <div>
-            <input type="text" id="search" placeholder="Дата или ФИО дежурного" onkeyup="searchMatches(event)">
-          </div>
-          <div style="padding-left: 2.5%;">
-            <button type="button" id="buttonSearch">
+        <div class="input-group mb-3 parameter">
+          <input type="text" class="form-control" id="camera_name" placeholder="Наименование камеры" onkeyup="searchMatches(event)">
+          <button type="button" class="btn btn-light">
+            <i class="fas fa-magnifying-glass"></i>
+          </button>
+        </div>
+
+        <div class="input-group mb-3 parameter">
+          <span class="input-group-text" style="width: 100%;">Время события</span>
+          <div class="input-group m-3">
+            <span class="input-group-text" id="basic-addon1">С</span>
+            <input type="datetime-local" class="form-control" id="beginDateTime" placeholder="ДД-ММ-ГГГГ ЧЧ:ММ" onkeyup="searchMatches(event)">
+            <span class="input-group-text" id="basic-addon1">по</span>
+            <input type="datetime-local" class="form-control" id="endDateTime" placeholder="ДД-ММ-ГГГГ ЧЧ:ММ" onkeyup="searchMatches(event)">
+            <button type="button" class="btn btn-light">
               <i class="fas fa-magnifying-glass"></i>
-            </input>
+            </button>
           </div>
         </div>
+
         <div class="input-group mb-3 parameter">
           <ul class="list-group list-group-flush">
             <span class="input-group-text">Статус</span>
             <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1 event_based" value="Обработанные" aria-label="..." onclick="filtering(1, 'event_based')" />
+              <input type="checkbox" class="form-check-input me-1 event_based" value="False" aria-label="..." onclick="filtering(1, 'event_based')" />
               Обработанные
             </li>
             <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1 event_based" value="Необработанные" aria-label="..." onclick="filtering(1, 'event_based')" />
+              <input type="checkbox" class="form-check-input me-1 event_based" value="True" aria-label="..." onclick="filtering(1, 'event_based')" />
               Необработанные
             </li>
           </ul>
-        </div>
-        <div class="input-group mb-3 parameter">
-            Блок с полями ввода пограничных дат!
-        </div>
-        <div class="input-group mb-3 parameter">
-            Поиск по названию камеры!
         </div>
       </form>
       <div id="resultSelection"></div>
@@ -127,30 +136,35 @@
       //@ts-check
       const reports = {{{reports}}};
       let resultSelection = document.getElementById('resultSelection');
-      //document.getElementsByTagName('img')[0].src = `data:image/png; base64, ${reports[0].captured_image}`;
-
 
       for (let report of reports)
       {
         const buttonArrange = !report.report_compiled ? 
-        `<div class="mb-3" id="arrange_report_id">
-          <button type="button" class="btn btn-warning" id="${report.report_id}" onclick="arrange(this)">Закончить оформление</button>
+        `<div class="mb-3" id="arrange_${report.report_id}">
+          <button type="button" class="btn btn-warning" id="${report.report_id}" value="True"><a href="/updateReport/${report.report_id}">Закончить оформление</a></button>
         </div>`
         :
-        `<div class="mb-3" id="arrange_report_id">
-          <a href="/getReportById/${report.report_id}" class="link-info link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Перейти к отчету</a>
+        `<div class="mb-3" id="arrange_${report.report_id}">
+          <a href="/getReportById/${report.report_id}" id="${report.report_id}" class="link-info link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" value="False">Перейти к отчету</a>
         </div>`;
+
+        const dtIncident = new Date(report.datetime);
+        const dtDate = dtIncident.getDate() < 10 ? '0' + dtIncident.getDate() : dtIncident.getDate();
+        const dtMonth = dtIncident.getMonth() + 1 < 10 ? '0' + (dtIncident.getMonth() + 1) : (dtIncident.getMonth() + 1);
+        const timeDisplay = dtDate + '-' + dtMonth + '-' + dtIncident.getFullYear() + ' ' + dtIncident.getHours() + ':' + dtIncident.getMinutes();
+
         resultSelection.innerHTML +=
         `<div class="card mb-3" id="block_${report.report_id}">
           <div class="row g-0">
-            <div class="col-md-5" id="picture">
-              <img src="data:image/png; base64, ${report.captured_image}" alt="Не удалось получить доступ к камере" class="rounded-start">
-            </div>
+            <figure class="figure col-md-5"  id="picture">
+              <img src="data:image/png; base64, ${report.captured_image}" alt="Не удалось получить доступ к камере" class="figure-img img-fluid rounded">
+              <figcaption class="figure-caption" id="figcaption_${report.name_camera}">Получено с камеры ${report.name_camera}</figcaption>
+            </figure>
             <div class="col-md-7" id="information">
               <div class="card-body">
                 <div class="mb-3">
                   <label for="dateTimeIncident" class="form-label">Время</label>
-                  <input type="text" class="form-control" id="dateTimeIncident" readonly value="${report.datetime}">
+                  <input type="text" class="form-control" id="dateTimeIncident" readonly value="${timeDisplay}">
                 </div>
                 <div class="mb-3">
                   <label for="placeIncident" class="form-label">Место</label>
@@ -167,62 +181,77 @@
         </div>`;
       }
 
-    //   // Фильтрация
-    //   const tr = table.getElementsByTagName('tr');
-    //   function filtering(indexParameter, titleParameter) {
-    //     let inputStatus = document.getElementsByClassName(titleParameter);
-    //     let arrValueChecked = new Map();
-    //     for (let i = 0; i < inputStatus.length; i++) {
-    //       arrValueChecked.set(inputStatus[i].value, inputStatus[i].checked);
-    //     }
-    //     const values = new Set(arrValueChecked.values());
-    //     if (values.size === 1) displayRows();
-    //     else {
-    //       arrValueChecked.forEach((value, key, map) => {
-    //         key = key.toUpperCase();
-    //         if (value) {
-    //           for (let i = 0; i < tr.length; i++) {
-    //             td = tr[i].getElementsByTagName('td')[indexParameter];
-    //             if (td) {
-    //               txtValue = td.innerText.toUpperCase();
-    //               if (txtValue.indexOf(key) > -1) displayRows(i);
-    //               else tr[i].style.display = "none";
-    //             }
-    //           }
-    //         }
-    //       });
-    //     }
-    //   }
+      // Фильтрация
+      const reportsBlock = document.getElementsByClassName('card');
+      function filtering(indexParameter, titleParameter) {
+        let inputStatus = document.getElementsByClassName(titleParameter);
+        let arrValueChecked = new Map();
+        for (let i = 0; i < inputStatus.length; i++) {
+          arrValueChecked.set(inputStatus[i].value, inputStatus[i].checked);
+        }
+        const values = new Set(arrValueChecked.values());
+        if (values.size === 1) displayReport();
+        else {
+          arrValueChecked.forEach((value, key, map) => {
+            key = key.toUpperCase();
+            if (value) {
+              for (let i = 0; i < reportsBlock.length; i++) {
+                const idBlock = reportsBlock[i].id.replace('block_', '');
+                const statusReport = document.getElementById(idBlock).value.toUpperCase();
+                if (key === statusReport) { // Отчет не оформлен
+                  reportsBlock[i].style.display = "flex";
+                }
+                else reportsBlock[i].style.display = "none";
+              }
+            }
+          });
+        }
+      }
 
-    //   /// Отображение необходимых полей
-    //   function displayRows(numberRows = 'all') {
-    //     if (numberRows === 'all') {
-    //       for (i = 0; i < tr.length; i++) {
-    //         tr[i].style.display = "";
-    //       }
-    //     }
-    //     else tr[Number(numberRows)].style.display = "";
-    //   }
+      /// Отображение необходимых полей
+      function displayReport(numberRows = 'all') {
+        if (numberRows === 'all') {
+          for (i = 0; i < reportsBlock.length; i++) {
+            reportsBlock[i].style.display = "";
+          }
+        }
+        else reportsBlock[Number(numberRows)].style.display = "";
+      }
 
-    //   /// Поле поиска
-    //   function searchMatches(event) {
-    //     const valueSearch = document.getElementById('search').value.toUpperCase();
-
-    //     for (let i = 0; i < tr.length; i++) {
-    //       thTitle = tr[i].getElementsByTagName('th')[0];
-    //       tdUrl = tr[i].getElementsByTagName('td')[0];
-    //       tdCity = tr[i].getElementsByTagName('td')[3];
-    //       if (thTitle && tdUrl && tdCity) {
-    //         const txtTitle = thTitle.innerText.toUpperCase();
-    //         const txtUrl = tdUrl.innerText.toUpperCase();
-    //         const txtCity = tdCity.innerText.toUpperCase();
-    //         if (txtTitle.indexOf(valueSearch) > -1) displayRows(i);
-    //         else if (txtUrl.indexOf(valueSearch) > -1) displayRows(i);
-    //         else if (txtCity.indexOf(valueSearch) > -1) displayRows(i);
-    //         else tr[i].style.display = "none";
-    //       }
-    //     }
-    //   }
+      /// Поле поиска
+      function searchMatches(event) {
+        const searchCameraName = document.getElementById('camera_name').value.toUpperCase();
+        let searchBeginDateTime = document.getElementById('beginDateTime').value;
+        let searchEndDateTime = document.getElementById('endDateTime').value;
+        searchBeginDateTime = searchBeginDateTime.length === 0 ? null : new Date(searchBeginDateTime).getTime();
+        searchEndDateTime = searchEndDateTime.length === 0 ? null : new Date(searchEndDateTime).getTime();
+        for (let i = 0; i < reportsBlock.length; i++) {
+          const idBlock = reportsBlock[i].id.replace('block_', '');
+          const nameCamera = reportsBlock[i].getElementsByTagName('figcaption')[0].innerText.replace('Получено с камеры ', '').toUpperCase();
+          let dateTimeIncident = new Date(reportsBlock[i].getElementsByClassName('mb-3')[0].getElementsByTagName('input')[0].value).getTime();
+          if (searchCameraName.length !== 0) {
+            if (nameCamera.indexOf(searchCameraName) > -1) displayReport(i);
+            else reportsBlock[i].style.display = "none";
+          }
+          else displayReport();
+          if (searchBeginDateTime || searchEndDateTime) {
+            if (searchBeginDateTime && searchEndDateTime) {
+              if (dateTimeIncident > searchBeginDateTime
+              && searchEndDateTime > dateTimeIncident) displayReport(i);
+              else reportsBlock[i].style.display = "none";
+            }
+            else if (searchBeginDateTime && !searchEndDateTime) {
+              if (dateTimeIncident > searchBeginDateTime) displayReport(i);
+              else reportsBlock[i].style.display = "none";
+            }
+            else if (!searchBeginDateTime && searchEndDateTime) {
+              if (searchEndDateTime > dateTimeIncident) displayReport(i);
+              else reportsBlock[i].style.display = "none";
+            }
+            else reportsBlock[i].style.display = "none";
+          }
+        }
+      }
     </script>
   </body>
 </html>

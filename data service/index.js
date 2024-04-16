@@ -27,6 +27,7 @@ app.get('/', (request, response) => {
 
 app.post('/registerCamera', async (request, response) => {
   databaseManager.registerCamera(request, response);
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   await consumer.disconnect();
   await run();
 });
@@ -79,7 +80,7 @@ const brokers = [process.env.KAFKA_DEFAULT_BROKER];
 const kafka = new Kafka({ clientId: clientId, brokers: brokers });
 const consumer = kafka.consumer({ groupId: clientId });
 
-run();
+async () => await run();
 
 async function run() {
   ///  Получаем список топиков

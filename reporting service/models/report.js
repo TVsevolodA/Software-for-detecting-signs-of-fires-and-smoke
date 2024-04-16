@@ -57,20 +57,23 @@ module.exports= class Report{
     }
 
     async getReportById(report_id) {
-        return (await this.pool.query("SELECT * FROM reports WHERE report_id = $1;", [report_id])).rows[0];
-    }
-
-    async getReports() {
         return (await this.pool.query(`
-        SELECT
-        report_id, event_based, name_camera, address,
-        r.datetime, type_event, captured_image, report_compiled,
-        username, description, measures_taken, consequences, conclusion
+        SELECT *
         FROM reports as r
         JOIN notifications as n ON r.number_incident = n.incident_id
         JOIN cameras as c ON n.camera_data = c.camera_id
         JOIN location_cameras as l ON l.location_id = c.camera_location
-        JOIN users as u ON u.user_id = r.duty;`)).rows;
+        JOIN users as u ON u.user_id = r.duty
+        WHERE report_id = $1;`, [report_id])).rows[0];
+    }
+
+    async getReports() {
+        return (await this.pool.query(`
+        SELECT report_id, name_camera, address, r.datetime, type_event, captured_image, report_compiled
+        FROM reports as r
+        JOIN notifications as n ON r.number_incident = n.incident_id
+        JOIN cameras as c ON n.camera_data = c.camera_id
+        JOIN location_cameras as l ON l.location_id = c.camera_location;`)).rows;
     }
 
     async update() {

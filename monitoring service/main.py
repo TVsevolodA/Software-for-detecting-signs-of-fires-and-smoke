@@ -1,5 +1,5 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, render_template, Response, request, redirect, url_for, jsonify, flash
+from flask import Flask, render_template, Response, request, redirect, url_for, jsonify, flash, session
 from flask_socketio import SocketIO
 from threading import Lock
 from camera_builder import camerasBuilder
@@ -153,6 +153,15 @@ def gen(id_camera_web):
 def video_feed(id):
     return Response(gen(int(id)),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/reporting', methods=["GET", "POST"])
+def reporting():
+    authorized_user = {
+    'user_id': current_user.user_id,
+    'username': current_user.username
+    }
+    session['user'] = authorized_user
+    return redirect("http://localhost:4000/getReports", code=307)
 
 @app.route('/addCamera', methods=["GET"])
 def addCamera():

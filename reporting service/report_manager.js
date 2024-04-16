@@ -15,7 +15,7 @@ const pool = new Pool({
 const Report = require('./models/report.js');
 
 async function getReportById(request, response) {
-    const report_id = parseInt(request.params.id)
+    const report_id = parseInt(request.params.id);
     let reportObject = Report.emptyReport(pool);
     const report = (await reportObject.getReportById(report_id));
     if (report !== undefined) {
@@ -26,27 +26,32 @@ async function getReportById(request, response) {
 }
 
 async function getReports(request, response) {
+    console.log(request.session);
+    // console.log(`${request.body}`);
     let reportObject = Report.emptyReport(pool);
     const reports = (await reportObject.getReports());
     response.render("reports.hbs", {"reports": JSON.stringify(reports)});
 }
 
-async function createReport(request, response) {
-    const report_json = request.body.report;
-    let reportObject = Report.withoutId(pool, report_json);
-    const idNewReport = (await reportObject.insertWithReturnId());
-    response.status(200).json(idNewReport);
-}
 async function updateReport(request, response) {
-    const report_json = request.body.report;
-    let reportObject = new Report(pool, report_json);
-    reportObject.update();
-    response.status(200).json({"result": "Данные отчета успешно обновлены"});
+    if (request.method === 'GET') {
+        const report_id = parseInt(request.params.id);
+        let reportObject = Report.emptyReport(pool);
+        const report = (await reportObject.getReportById(report_id));
+        response.render("report.hbs", {"report": JSON.stringify(report)});
+    }
+    else {
+        // TODO: нужно обновить информацию в отчете + уведомлении!
+        console.log(request.body);
+        // const report = request.body.report;
+        // let reportObject = new Report(pool, report);
+        // reportObject.update();
+        response.status(200).json({"result": "Данные отчета успешно обновлены"});
+    }
 }
 
 module.exports = {
     getReportById,
     getReports,
-    createReport,
     updateReport
 }

@@ -5,11 +5,20 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
 const port = 4000
+const urlencodedParser = express.urlencoded({extended: false});
+const session = require('express-session');
+
 
 app.use(bodyParser.json())
 app.use(
   bodyParser.urlencoded({
     extended: true,
+  })
+)
+app.use(
+  session({
+      secret: 'secret!',
+      saveUninitialized: true,
   })
 )
 
@@ -23,6 +32,7 @@ app.get('/', (request, response) => {
 });
 
 app.get('/getReportById/:id', (request, response) => reportManager.getReportById(request, response));
+app.post('/getReports',    (request, response) => reportManager.getReports(request, response));
 app.get('/getReports',    (request, response) => reportManager.getReports(request, response));
-app.post('/createReport', (request, response) => reportManager.createReport(request, response));
-app.post('/updateReport', (request, response) => reportManager.updateReport(request, response));
+app.get('/updateReport/:id', (request, response) => reportManager.updateReport(request, response));
+app.post('/updateReport/:id', urlencodedParser, (request, response) => reportManager.updateReport(request, response));

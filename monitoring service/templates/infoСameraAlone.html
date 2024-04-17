@@ -106,32 +106,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
       //@ts-check
-      /// Рисуем график
-      const labels = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-      const ctx = document.getElementById('myChart');
-
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Частота возгораний за год',
-            // TODO: получать данные из БД!
-            // TODO: подумать что за данные отображать!
-            data: [0, 1, 5, 0, 6, 12, 4, 4, 2, 3, 2, 0],
-            fill: false,
-            borderColor: 'rgb(255, 159, 64)',
-            tension: 0.1,
-          }]
-        },
-      });
-
-      // let infoCameras = '[{"name": "Xiaomi_Smart_Camera", "url": "http://camera:5040", "status": "Работает", "longitude": 45.980185, "latitude": 51.529657, "address": "г.Саратов,ул.Политехническая,77"}]';
-      // const infoCameras = ' infoCameras|tojson }}';
-      // const data = JSON.parse(infoCameras);
-
       let stream = document.getElementById('cameraStream');
-      // let url = "../static/images/source_not_found.jpg";
       let flagSuccessDownload = true;
       let url = "{{ url_for('video_feed', id='value') }}".replace('value', '{{stream}}');
       stream.src = url;
@@ -150,9 +125,7 @@
 
       document.addEventListener("DOMContentLoaded", () => {
         const socket = io.connect('http://localhost:5050', {
-          'reconnection': true,
-          // 'reconnectionDelayMax': 5000,
-          // 'reconnectionAttempts': 5
+          'reconnection': true
         });
         socket.on('connect', function() {
           socket.emit('my_event', {data: ['{{stream}}']});
@@ -165,6 +138,179 @@
           }
         });
       });
+    </script>
+    <script>
+      //@ts-check
+      const labels = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресень'];
+      const ctx = document.getElementById('myChart');
+
+      /// Для отрисовки
+      const getOrCreateTooltip = (chart) => {
+        let tooltipEl = chart.canvas.parentNode.querySelector('div');
+        
+        if (!tooltipEl) {
+          tooltipEl = document.createElement('div');
+          tooltipEl.style.background = 'rgba(0, 0, 0, 0.7)';
+          tooltipEl.style.borderRadius = '3px';
+          tooltipEl.style.color = 'white';
+          tooltipEl.style.opacity = 1;
+          tooltipEl.style.pointerEvents = 'none';
+          tooltipEl.style.position = 'absolute';
+          tooltipEl.style.transform = 'translate(-50%, 0)';
+          tooltipEl.style.transition = 'all .1s ease';
+
+          const table = document.createElement('table');
+          table.style.margin = '0px';
+
+          tooltipEl.appendChild(table);
+          chart.canvas.parentNode.appendChild(tooltipEl);
+        }
+        return tooltipEl;
+      };
+
+      const externalTooltipHandler = (context) => {
+        // Tooltip Element
+        const {chart, tooltip} = context;
+        const tooltipEl = getOrCreateTooltip(chart);
+
+        // Hide if no tooltip
+        if (tooltip.opacity === 0) {
+          tooltipEl.style.opacity = 0;
+          return;
+        }
+
+        // Set Text
+        if (tooltip.body) {
+          const titleLines = tooltip.title || [];
+          const bodyLines = tooltip.body.map(b => b.lines);
+
+          const tableHead = document.createElement('thead');
+
+          titleLines.forEach(title => {
+            const tr = document.createElement('tr');
+            tr.style.borderWidth = 0;
+
+            const th = document.createElement('th');
+            th.style.borderWidth = 0;
+            const text = document.createTextNode(title);
+
+            th.appendChild(text);
+            tr.appendChild(th);
+            tableHead.appendChild(tr);
+          });
+
+          const tableBody = document.createElement('tbody');
+          bodyLines.forEach((body, i) => {
+            const colors = tooltip.labelColors[i];
+
+            const span = document.createElement('span');
+            span.style.background = colors.backgroundColor;
+            span.style.borderColor = colors.borderColor;
+            span.style.borderWidth = '2px';
+            span.style.marginRight = '10px';
+            span.style.height = '10px';
+            span.style.width = '10px';
+            span.style.display = 'inline-block';
+
+            const tr = document.createElement('tr');
+            tr.style.backgroundColor = 'inherit';
+            tr.style.borderWidth = 0;
+
+            const td = document.createElement('td');
+            td.style.borderWidth = 0;
+
+            const text = document.createTextNode(body);
+
+            td.appendChild(span);
+            td.appendChild(text);
+            tr.appendChild(td);
+            tableBody.appendChild(tr);
+          });
+
+          const tableRoot = tooltipEl.querySelector('table');
+
+          // Remove old children
+          while (tableRoot.firstChild) {
+            tableRoot.firstChild.remove();
+          }
+
+          // Add new children
+          tableRoot.appendChild(tableHead);
+          tableRoot.appendChild(tableBody);
+        }
+
+        const {offsetLeft: positionX, offsetTop: positionY} = chart.canvas;
+
+        // Display, position, and set styles for font
+        tooltipEl.style.opacity = 1;
+        tooltipEl.style.left = positionX + tooltip.caretX + 'px';
+        tooltipEl.style.top = positionY + tooltip.caretY + 'px';
+        tooltipEl.style.font = tooltip.options.bodyFont.string;
+        tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
+      };
+
+
+      
+      const idCamera = Number('{{idCamera}}');
+      switch (idCamera) {
+        case 1:
+          drawGraphForCamera([4, 2, 1, 0, 0, 2, 1], [1, 2, 2, 5, 0, 2, 3]);
+          break;
+        case 2:
+          drawGraphForCamera([2, 4, 3, 10, 0, 5, 1], [4, 2, 3, 20, 1, 3, 0]);
+          break;
+        case 3:
+          drawGraphForCamera([3, 2, 7, 5, 0, 4, 1], [4, 6, 3, 5, 0, 8, 0]);
+          break;
+        default:
+          drawGraphForCamera([3, 0, 2, 0, 4, 9, 5], [5, 1, 3, 0, 4, 11, 7]);
+      }
+
+      /// Непосредственно отрисовка
+      function drawGraphForCamera (fireData, smokeData) {
+        /// Данные для отрисовки
+        const data = {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Признаки пожара',
+            data: fireData,
+            fill: false,
+            borderColor: '#ffa500',
+            backgroundColor: '#ff9900',
+          },
+          {
+            label: 'Признаки задымлений',
+            data: smokeData,
+            fill: false,
+            borderColor: '#808080',
+            backgroundColor: '#8a7f8e',
+          },
+        ]
+      };
+
+        new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Количество происшествий за прошедшую неделю'
+            },
+            tooltip: {
+              enabled: false,
+              position: 'nearest',
+              external: externalTooltipHandler
+            }
+          }
+        }
+      });
+      }
     </script>
   </body>
 </html>

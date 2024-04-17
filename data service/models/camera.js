@@ -57,4 +57,8 @@ module.exports= class Camera{
         }));
         return cameras;
     }
+
+    async changeCameraStatus(camera_id, status) {
+        await this.pool.query(`UPDATE cameras SET status = $1 WHERE camera_id = $2;`, [status, camera_id]);
+    }
 }

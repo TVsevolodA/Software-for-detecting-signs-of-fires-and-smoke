@@ -114,7 +114,8 @@
     <!-- SocketIO -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
-      let uniqueNotifications = localStorage.notifications === undefined ? new Map() : new Map(JSON.parse(localStorage.notifications));
+      let uniqueNotifications = new Map();
+      // localStorage.notifications === undefined ? new Map() : new Map(JSON.parse(localStorage.notifications));
 
       let statusWindowNotification = false;
       let myModal = new bootstrap.Modal(document.getElementById('myModal'),{backdrop: false});
@@ -131,17 +132,17 @@
       };
 
       function openNotificationWindow() {
-        statusWindowNotification = !statusWindowNotification;
-        if (statusWindowNotification) {
-          myModal.show();
-          uniqueNotifications.forEach((value, key, map) => {
-            const detectedSigns = getSigns(value.signs);
-            createNewBlockNotification(modalWindow, key, value.dateTime, detectedSigns);
-          });
-        }
-        else {
-          myModal.hide();
-        }
+        statusWindowNotification = document.getElementById('myModal').style.display === 'none' ? false : true;
+        // if (statusWindowNotification) {
+        myModal.show();
+        uniqueNotifications.forEach((value, key, map) => {
+          const detectedSigns = getSigns(value.signs);
+          createNewBlockNotification(modalWindow, key, value.dateTime, detectedSigns);
+        });
+        // }
+        // else {
+        //   myModal.hide();
+        // }
       }
 
       function getSigns(value) {
@@ -154,49 +155,53 @@
       }
 
       function createNewBlockNotification(mw, cn, dt, ss) {
-        let generalBlock = document.createElement('div');
-        let titleNotification = document.createElement('div');
-        let iconBlock = document.createElement('div');
-        let icon = document.createElement('i');
-        let cameraNameBlock = document.createElement('div');
-        let paragrafcameraName = document.createElement('p');
-        let cameraName = document.createElement('strong');
-        let closeNotificationBlock = document.createElement('div');
-        let closeNotificationButton = document.createElement('button');
-        let contextNotification = document.createElement('div');
-        let dateTimeBlock = document.createElement('div');
-        let signsBlock = document.createElement('div');
+        if (document.getElementById(cn) === null)
+        {
+          let generalBlock = document.createElement('div');
+          let titleNotification = document.createElement('div');
+          let iconBlock = document.createElement('div');
+          let icon = document.createElement('i');
+          let cameraNameBlock = document.createElement('div');
+          let paragrafcameraName = document.createElement('p');
+          let cameraName = document.createElement('strong');
+          let closeNotificationBlock = document.createElement('div');
+          let closeNotificationButton = document.createElement('button');
+          let contextNotification = document.createElement('div');
+          let dateTimeBlock = document.createElement('div');
+          let signsBlock = document.createElement('div');
 
-        generalBlock.className = "alert alert-warning alert-danger fade show";
-        titleNotification.className = "titleNotification";
-        titleNotification.setAttribute("role", "alert");
-        iconBlock.className = "notificationContent";
-        icon.className = "bi bi-exclamation-octagon-fill h5";
-        cameraNameBlock.className = "notificationContent";
-        closeNotificationBlock.className = "notificationContent";
-        closeNotificationButton.type = "button";
-        closeNotificationButton.className = "btn-close";
-        closeNotificationButton.setAttribute("data-bs-dismiss", "alert");
-        closeNotificationButton.setAttribute("aria-label", "Close");
-        contextNotification.className = "notificationContent";
-        signsBlock.id = cn;
+          generalBlock.className = "alert alert-warning alert-danger fade show";
+          titleNotification.className = "titleNotification";
+          titleNotification.setAttribute("role", "alert");
+          iconBlock.className = "notificationContent";
+          icon.className = "bi bi-exclamation-octagon-fill h5";
+          cameraNameBlock.className = "notificationContent";
+          paragrafcameraName.id = 'cn';
+          closeNotificationBlock.className = "notificationContent";
+          closeNotificationButton.type = "button";
+          closeNotificationButton.className = "btn-close";
+          closeNotificationButton.setAttribute("data-bs-dismiss", "alert");
+          closeNotificationButton.setAttribute("aria-label", "Close");
+          contextNotification.className = "notificationContent";
+          signsBlock.id = cn;
 
-        cameraName.innerHTML = "Камера " + cn;
-        dateTimeBlock.innerHTML = dt;
-        signsBlock.innerHTML = ss;
+          cameraName.innerHTML = "Камера " + cn;
+          dateTimeBlock.innerHTML = dt;
+          signsBlock.innerHTML = ss;
 
-        mw.appendChild(generalBlock);
-        generalBlock.appendChild(titleNotification);
-        titleNotification.appendChild(iconBlock);
-        iconBlock.appendChild(icon);
-        titleNotification.appendChild(cameraNameBlock);
-        cameraNameBlock.appendChild(paragrafcameraName);
-        paragrafcameraName.appendChild(cameraName);
-        titleNotification.appendChild(closeNotificationBlock);
-        closeNotificationBlock.appendChild(closeNotificationButton);
-        generalBlock.appendChild(contextNotification);
-        contextNotification.appendChild(dateTimeBlock);
-        contextNotification.appendChild(signsBlock);
+          mw.appendChild(generalBlock);
+          generalBlock.appendChild(titleNotification);
+          titleNotification.appendChild(iconBlock);
+          iconBlock.appendChild(icon);
+          titleNotification.appendChild(cameraNameBlock);
+          cameraNameBlock.appendChild(paragrafcameraName);
+          paragrafcameraName.appendChild(cameraName);
+          titleNotification.appendChild(closeNotificationBlock);
+          closeNotificationBlock.appendChild(closeNotificationButton);
+          generalBlock.appendChild(contextNotification);
+          contextNotification.appendChild(dateTimeBlock);
+          contextNotification.appendChild(signsBlock);
+        }
       }
 
       function changeSizeStream(imgs, w, h) {
@@ -267,7 +272,7 @@
 
           /// Вносим изменения в map
           uniqueNotifications.set(data.camera_name, {'dateTime': new Date().toLocaleString("ru", options), 'signs': data.value});
-          localStorage.notifications = JSON.stringify(Array.from(uniqueNotifications));
+          // localStorage.notifications = JSON.stringify(Array.from(uniqueNotifications));
         });
       });
       

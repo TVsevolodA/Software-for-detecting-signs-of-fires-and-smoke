@@ -1,5 +1,5 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, render_template, Response, request, redirect, url_for, jsonify, flash, session
+from flask import Flask, render_template, Response, request, redirect, url_for, jsonify, flash
 from flask_socketio import SocketIO
 from threading import Lock
 from camera_builder import camerasBuilder
@@ -155,13 +155,11 @@ def video_feed(id):
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/reporting', methods=["GET", "POST"])
+@login_required
 def reporting():
-    authorized_user = {
-    'user_id': current_user.user_id,
-    'username': current_user.username
-    }
-    session['user'] = authorized_user
-    return redirect("http://localhost:4000/getReports", code=307)
+    user_id = current_user.user_id
+    username = current_user.username
+    return redirect(f'http://localhost:4000/getReports/{user_id}/{username}', code=307)
 
 @app.route('/addCamera', methods=["GET"])
 def addCamera():
@@ -272,6 +270,8 @@ def background_thread(ids):
                 el = signs.get(sign)
                 if el is not None:
                     new_signs[sign] = el
+            if not new_signs:
+                continue
             socketio.emit('data', {'camera_name': camera.dict_camera['name'], 'value': new_signs})
 
 def getSigns():

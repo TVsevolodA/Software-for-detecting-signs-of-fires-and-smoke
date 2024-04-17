@@ -32,6 +32,8 @@ app.post('/registerCamera', async (request, response) => {
   await run();
 });
 
+app.post('/changeCameraStatus', (request, response) => databaseManager.changeCameraStatus(request, response));
+
 app.get('/infoCamera', (request, response) => databaseManager.infoCamera(request, response));
 
 app.get('/getListSources', async (request, response) => {

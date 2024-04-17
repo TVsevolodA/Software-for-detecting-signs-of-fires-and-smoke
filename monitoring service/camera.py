@@ -7,7 +7,7 @@ from queue import Queue
 import json
 import base64
 import datetime
-# import requests
+import requests
 
 class VideoCamera(object):
 
@@ -58,12 +58,22 @@ class VideoCamera(object):
             self.cap = cv2.VideoCapture(url_camera)
             if self.cap.isOpened():
                 self.__status = True
+                self.__changeCameraStatus(True)
                 print(f'Соединение с камерой {url_camera} восстановлено.')
                 break
             iter += 1
         if iter >= 5:
             print(f'Попытка соединения с камерой {url_camera} не увенчалась успехом.')
-        
+
+
+    def __changeCameraStatus(self, status):
+        req = requests.post(
+            'http://data_service_sm:3000/changeCameraStatus',
+            json={
+                'camera_id': self.dict_camera['index'],
+                'status': status
+            }
+        )
     
     def get_frame(self):
         success, image = self.cap.read()
@@ -75,6 +85,7 @@ class VideoCamera(object):
             self.frames.put(jpeg.tobytes())
         else:
             self.__status = False
+            self.__changeCameraStatus(False)
 
     """
     Отправляет данные в тему Kafka.

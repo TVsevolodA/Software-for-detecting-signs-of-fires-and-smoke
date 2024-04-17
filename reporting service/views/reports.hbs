@@ -70,6 +70,10 @@
         width: 100%;
         height: 100%;
       }
+      a {
+        font-size: 20px;
+        font-weight: 600;
+      }
   </style>
   </head>
   <body>
@@ -79,7 +83,6 @@
           <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5050">Главная</a></li>
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5050/managingRoles">Роли</a></li>
           </ul>
           <ul class="navbar-nav">
@@ -141,11 +144,11 @@
       {
         const buttonArrange = !report.report_compiled ? 
         `<div class="mb-3" id="arrange_${report.report_id}">
-          <button type="button" class="btn btn-warning" id="${report.report_id}" value="True"><a href="/updateReport/${report.report_id}">Закончить оформление</a></button>
+          <button type="button" class="btn btn-warning" id="${report.report_id}" value="True"><a href="/updateReport/${report.report_id}" class="link-underline link-underline-opacity-0">Закончить оформление</a></button>
         </div>`
         :
         `<div class="mb-3" id="arrange_${report.report_id}">
-          <a href="/getReportById/${report.report_id}" id="${report.report_id}" class="link-info link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" value="False">Перейти к отчету</a>
+          <button type="button" class="btn btn-link" id="${report.report_id}" value="False"><a href="/getReportById/${report.report_id}" class="link-primary">Перейти к отчету</a>
         </div>`;
 
         const dtIncident = new Date(report.datetime);

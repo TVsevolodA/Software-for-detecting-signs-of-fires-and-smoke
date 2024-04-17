@@ -148,6 +148,14 @@ function registerCamera(request, response) {
     sendRequest(url_address, camera_data.url, response);
 }
 
+async function changeCameraStatus(request, response) {
+    const camera_id = request.body.camera_id;
+    const status = request.body.status;
+    const cameraObject = Camera.emptyCamera(pool);
+    await cameraObject.changeCameraStatus(camera_id, status);
+    response.status(201).json('Статус камеры успешно обновлен.');
+}
+
 async function infoCamera(request, response) {
     const searchParameter = request.body.camera === 'all' ? null : request.body.camera;
     const cameraObject = Camera.emptyCamera(pool);
@@ -314,6 +322,7 @@ module.exports = {
     deleteEventTriggerById,
     saveRecord,
     registerCamera,
+    changeCameraStatus,
     getListSources,
     infoCamera,
     getEventTriggers,

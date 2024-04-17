@@ -26,7 +26,7 @@
           <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5050">Главная</a></li>
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#" id="mainReport">Отчетность</a></li>
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5050/managingRoles">Роли</a></li>
           </ul>
           <ul class="navbar-nav">
@@ -42,8 +42,9 @@
     <main>
         <form method="post" class="row g-3 needs-validation" novalidate>
           <div class="accordion" id="accordionPanelsStayOpenExample">
-            <input type="text" readonly required class="HiddenFields" name="report_id" id="report_id">
-            <input type="text" readonly required class="HiddenFields" name="number_incident" id="number_incident">
+            <input type="number" readonly required class="HiddenFields" name="report_id" id="report_id">
+            <input type="number" readonly required class="HiddenFields" name="number_incident" id="number_incident">
+            <input type="number" readonly required class="HiddenFields" name="duty" id="duty">
 
             <div class="accordion-item">
               <h2 class="accordion-header">
@@ -154,12 +155,20 @@
     <script>
       //@ts-check
       const report = {{{report}}};
+      const currentUser = {{{user}}};
+
+      document.getElementById('mainReport').href = `/getReports/${currentUser.id}/${currentUser.name}`;
+      /// Если роль изначально системная, то подставляем id пользоавтеля
+      if (report.role === 'system') {
+        document.getElementById('duty').value = currentUser.id;
+        document.getElementById('username').value = currentUser.name;
+      }
+
       document.getElementById('report_id').value = report.report_id;
-      // document.getElementById('').value = report.event_based;
       document.getElementById('number_incident').value = report.number_incident;
-      // document.getElementById('').value = report.report_compiled;
 
       document.getElementById('datetime').value = report.datetime;
+      document.getElementById('description').value = report.description;
       document.getElementById('measures_taken').value = report.measures_taken;
       document.getElementById('consequences').value = report.consequences;
       document.getElementById('conclusion').value = report.conclusion;
@@ -171,9 +180,6 @@
 
       document.getElementById('name_camera').value = report.name_camera;
       document.getElementById('address').value = report.address;
-
-      // TODO: если в отчете не указана фамилия, то нужно получить ее через cookie
-      document.getElementById('username').readOnly = report.username.length === 0 ? false : true;
 
       (function () {
         'use strict'

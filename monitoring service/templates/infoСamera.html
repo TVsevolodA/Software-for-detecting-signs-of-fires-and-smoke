@@ -55,189 +55,190 @@
         font-style: normal;
         font-stretch: normal;
       }
-  </style>
-  </head>
-  <body>
-    <header>
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-          <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('index')}}">Главная</a></li>
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Отчетность</a></li>
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('managingRoles')}}">Роли</a></li>
-          </ul>
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="{{url_for('profile')}}">
-                <i class="bi bi-person-circle h1"></i>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </nav>
-    </header>
-    <main>
-      <form action="" id="systemSearch" onSubmit="return false;">
-        <div id="fieldSearch">
-          <div>
-            <input type="text" id="search" placeholder="Параметры камер" onkeyup="searchMatches(event)">
+    </style>
+    </head>
+    <body>
+      <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <div class="container-fluid">
+            <ul class="navbar-nav">
+              <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('index')}}">Главная</a></li>
+              <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
+              <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('reporting')}}">Отчетность</a></li>
+              <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('managingRoles')}}">Роли</a></li>
+            </ul>
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="{{url_for('profile')}}">
+                  <i class="bi bi-person-circle h1"></i>
+                </a>
+              </li>
+            </ul>
           </div>
-          <div style="padding-left: 2.5%;">
-            <button type="button" id="buttonSearch">
-              <i class="fas fa-magnifying-glass"></i>
-            </input>
+        </nav>
+      </header>
+      <main>
+        <form action="" id="systemSearch" onSubmit="return false;">
+          <div id="fieldSearch">
+            <div>
+              <input type="text" id="search" placeholder="Параметры камер" onkeyup="searchMatches(event)">
+            </div>
+            <div style="padding-left: 2.5%;">
+              <button type="button" id="buttonSearch">
+                <i class="fas fa-magnifying-glass"></i>
+              </input>
+            </div>
           </div>
-        </div>
-        <div id="parameter" class="input-group mb-3">
-          <ul class="list-group list-group-flush">
-            <span class="input-group-text">Статус</span>
-            <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1 status" value="Работает" aria-label="..." onclick="filtering(1, 'status')" />
-              Включенные
-            </li>
-            <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1 status" value="Выключенные" aria-label="..." onclick="filtering(1, 'status')" />
-              Выключенные
-            </li>
-          </ul>
-        </div>
-        <div id="parameter" class="input-group mb-3">
-          <ul class="list-group list-group-flush">
-            <span class="input-group-text">Местоположение</span>
-            <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1 city" value="Саратов" aria-label="..." onclick="filtering(3, 'city')" />
-              Саратов
-            </li>
-            <li class="list-group-item list-group-item-action">
-              <input type="checkbox" class="form-check-input me-1 city" value="Энгельс" aria-label="..." onclick="filtering(3, 'city')" />
-              Энгельс
-            </li>
-          </ul>
-        </div>
-      </form>
-      <table id="dataTable" class="table table-hover table-bordered caption-top sortable">
-        <!-- <caption>Доступные камеры</caption> -->
-        <thead>
-          <tr>
-            <th valign="middle" style="text-align: center;">Наименование</th>
-            <th valign="middle" style="text-align: center;">URL-адрес</th>
-            <th valign="middle" style="text-align: center;">Состояние</thё>
-            <th valign="middle" style="text-align: center;">Координаты (долгота, широта)</th>
-            <th valign="middle" style="text-align: center;">Адрес</th>
-          </tr>
-        </thead>
-      </table>
-    </main>
-    <!-- BootStrap -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <!-- Сортировка таблицы -->
-    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script>
-      //@ts-check
-      /// Сортировка
-      let table = document.getElementById('dataTable');
-      let tbody = document.createElement('tbody');
-      table.appendChild(tbody);
+          <div id="parameter" class="input-group mb-3">
+            <ul class="list-group list-group-flush">
+              <span class="input-group-text">Статус</span>
+              <li class="list-group-item list-group-item-action">
+                <input type="checkbox" class="form-check-input me-1 status" value="Работает" aria-label="..." onclick="filtering(1, 'status')" />
+                Включенные
+              </li>
+              <li class="list-group-item list-group-item-action">
+                <input type="checkbox" class="form-check-input me-1 status" value="Выключенные" aria-label="..." onclick="filtering(1, 'status')" />
+                Выключенные
+              </li>
+            </ul>
+          </div>
+          <div id="parameter" class="input-group mb-3">
+            <ul class="list-group list-group-flush">
+              <span class="input-group-text">Местоположение</span>
+              <li class="list-group-item list-group-item-action">
+                <input type="checkbox" class="form-check-input me-1 city" value="Саратов" aria-label="..." onclick="filtering(3, 'city')" />
+                Саратов
+              </li>
+              <li class="list-group-item list-group-item-action">
+                <input type="checkbox" class="form-check-input me-1 city" value="Энгельс" aria-label="..." onclick="filtering(3, 'city')" />
+                Энгельс
+              </li>
+            </ul>
+          </div>
+        </form>
+        <table id="dataTable" class="table table-hover table-bordered caption-top sortable">
+          <!-- <caption>Доступные камеры</caption> -->
+          <thead>
+            <tr>
+              <th valign="middle" style="text-align: center;">Наименование</th>
+              <th valign="middle" style="text-align: center;">URL-адрес</th>
+              <th valign="middle" style="text-align: center;">Состояние</thё>
+              <th valign="middle" style="text-align: center;">Координаты (долгота, широта)</th>
+              <th valign="middle" style="text-align: center;">Адрес</th>
+            </tr>
+          </thead>
+        </table>
+      </main>
+      <!-- BootStrap -->
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+      <!-- Сортировка таблицы -->
+      <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+      <script>
+        //@ts-check
+        /// Сортировка
+        let table = document.getElementById('dataTable');
+        let tbody = document.createElement('tbody');
+        table.appendChild(tbody);
 
-      const infoCameras = '{{ infoCameras|tojson }}';
-      const data = JSON.parse(infoCameras);
+        const infoCameras = '{{ infoCameras|tojson }}';
+        const data = JSON.parse(infoCameras);
 
-      let iter = 0;
-      for (let objCamera in data)
-      {
-        const stringCamera = JSON.stringify(data[objCamera]);
-        const camera = JSON.parse(stringCamera);
+        let iter = 0;
+        for (let objCamera in data)
+        {
+          const stringCamera = JSON.stringify(data[objCamera]);
+          const camera = JSON.parse(stringCamera);
 
-        let blockTr = document.createElement('tr');
+          let blockTr = document.createElement('tr');
 
-        let linkCamera = document.createElement('a');
-        linkCamera.href = `/infoСamera/cameras/${camera['name']}/${camera['id']}/${iter++}`;
-        linkCamera.innerHTML = camera['name'];
-        let nameCamera = document.createElement('th');
-        blockTr.appendChild(nameCamera);
-        nameCamera.appendChild(linkCamera);
+          let linkCamera = document.createElement('a');
+          linkCamera.href = `/infoСamera/cameras/${camera['name']}/${camera['id']}/${iter++}`;
+          linkCamera.innerHTML = camera['name'];
+          let nameCamera = document.createElement('th');
+          blockTr.appendChild(nameCamera);
+          nameCamera.appendChild(linkCamera);
 
-        let urlCamera = document.createElement('td');
-        urlCamera.innerHTML = camera['url'];
-        blockTr.appendChild(urlCamera);
+          let urlCamera = document.createElement('td');
+          urlCamera.innerHTML = camera['url'];
+          blockTr.appendChild(urlCamera);
 
-        let statusCamera = document.createElement('td');
-        statusCamera.style.fontWeight = 'bold';
-        statusCamera.style.color = camera['status'] === 'Работает' ? '#00ff00': '#ff4e33';
-        statusCamera.innerHTML = camera['status'];
-        blockTr.appendChild(statusCamera);
+          let statusCamera = document.createElement('td');
+          statusCamera.style.whiteSpace = "nowrap";
+          statusCamera.style.fontWeight = 'bold';
+          statusCamera.style.color = camera['status'] === 'Работает' ? '#00ff00': '#ff4e33';
+          statusCamera.innerHTML = camera['status'];
+          blockTr.appendChild(statusCamera);
 
-        let locationCamera = document.createElement('td');
-        locationCamera.innerHTML = camera['longitude'] + ', ' + camera['latitude'];
-        blockTr.appendChild(locationCamera);
+          let locationCamera = document.createElement('td');
+          locationCamera.innerHTML = camera['longitude'] + ', ' + camera['latitude'];
+          blockTr.appendChild(locationCamera);
 
-        let addressCamera = document.createElement('td');
-        addressCamera.innerHTML = camera['address'];
-        blockTr.appendChild(addressCamera);
+          let addressCamera = document.createElement('td');
+          addressCamera.innerHTML = camera['address'];
+          blockTr.appendChild(addressCamera);
 
-        tbody.appendChild(blockTr);
-      }
-
-      // Фильтрация
-      const tr = table.getElementsByTagName('tr');
-      function filtering(indexParameter, titleParameter) {
-        let inputStatus = document.getElementsByClassName(titleParameter);
-        let arrValueChecked = new Map();
-        for (let i = 0; i < inputStatus.length; i++) {
-          arrValueChecked.set(inputStatus[i].value, inputStatus[i].checked);
+          tbody.appendChild(blockTr);
         }
-        const values = new Set(arrValueChecked.values());
-        if (values.size === 1) displayRows();
-        else {
-          arrValueChecked.forEach((value, key, map) => {
-            key = key.toUpperCase();
-            if (value) {
-              for (let i = 0; i < tr.length; i++) {
-                td = tr[i].getElementsByTagName('td')[indexParameter];
-                if (td) {
-                  txtValue = td.innerText.toUpperCase();
-                  if (txtValue.indexOf(key) > -1) displayRows(i);
-                  else tr[i].style.display = "none";
+
+        // Фильтрация
+        const tr = table.getElementsByTagName('tr');
+        function filtering(indexParameter, titleParameter) {
+          let inputStatus = document.getElementsByClassName(titleParameter);
+          let arrValueChecked = new Map();
+          for (let i = 0; i < inputStatus.length; i++) {
+            arrValueChecked.set(inputStatus[i].value, inputStatus[i].checked);
+          }
+          const values = new Set(arrValueChecked.values());
+          if (values.size === 1) displayRows();
+          else {
+            arrValueChecked.forEach((value, key, map) => {
+              key = key.toUpperCase();
+              if (value) {
+                for (let i = 0; i < tr.length; i++) {
+                  td = tr[i].getElementsByTagName('td')[indexParameter];
+                  if (td) {
+                    txtValue = td.innerText.toUpperCase();
+                    if (txtValue.indexOf(key) > -1) displayRows(i);
+                    else tr[i].style.display = "none";
+                  }
                 }
               }
+            });
+          }
+        }
+
+        /// Отображение необходимых полей
+        function displayRows(numberRows = 'all') {
+          if (numberRows === 'all') {
+            for (i = 0; i < tr.length; i++) {
+              tr[i].style.display = "";
             }
-          });
-        }
-      }
-
-      /// Отображение необходимых полей
-      function displayRows(numberRows = 'all') {
-        if (numberRows === 'all') {
-          for (i = 0; i < tr.length; i++) {
-            tr[i].style.display = "";
           }
+          else tr[Number(numberRows)].style.display = "";
         }
-        else tr[Number(numberRows)].style.display = "";
-      }
 
-      /// Поле поиска
-      function searchMatches(event) {
-        const valueSearch = document.getElementById('search').value.toUpperCase();
+        /// Поле поиска
+        function searchMatches(event) {
+          const valueSearch = document.getElementById('search').value.toUpperCase();
 
-        for (let i = 0; i < tr.length; i++) {
-          thTitle = tr[i].getElementsByTagName('th')[0];
-          tdUrl = tr[i].getElementsByTagName('td')[0];
-          tdCity = tr[i].getElementsByTagName('td')[3];
-          if (thTitle && tdUrl && tdCity) {
-            const txtTitle = thTitle.innerText.toUpperCase();
-            const txtUrl = tdUrl.innerText.toUpperCase();
-            const txtCity = tdCity.innerText.toUpperCase();
-            if (txtTitle.indexOf(valueSearch) > -1) displayRows(i);
-            else if (txtUrl.indexOf(valueSearch) > -1) displayRows(i);
-            else if (txtCity.indexOf(valueSearch) > -1) displayRows(i);
-            else tr[i].style.display = "none";
+          for (let i = 0; i < tr.length; i++) {
+            thTitle = tr[i].getElementsByTagName('th')[0];
+            tdUrl = tr[i].getElementsByTagName('td')[0];
+            tdCity = tr[i].getElementsByTagName('td')[3];
+            if (thTitle && tdUrl && tdCity) {
+              const txtTitle = thTitle.innerText.toUpperCase();
+              const txtUrl = tdUrl.innerText.toUpperCase();
+              const txtCity = tdCity.innerText.toUpperCase();
+              if (txtTitle.indexOf(valueSearch) > -1) displayRows(i);
+              else if (txtUrl.indexOf(valueSearch) > -1) displayRows(i);
+              else if (txtCity.indexOf(valueSearch) > -1) displayRows(i);
+              else tr[i].style.display = "none";
+            }
           }
+          // const valueSearch = document.getElementById('search').value;
+          // if (event.key === 'Enter') console.log(valueSearch);
         }
-        // const valueSearch = document.getElementById('search').value;
-        // if (event.key === 'Enter') console.log(valueSearch);
-      }
-    </script>
-  </body>
+      </script>
+    </body>
 </html>

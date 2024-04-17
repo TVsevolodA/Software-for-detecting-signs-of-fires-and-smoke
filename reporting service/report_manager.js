@@ -1,4 +1,5 @@
 //@ts-check
+const http = require('http');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 const Pool = require('pg').Pool;
@@ -18,19 +19,20 @@ async function getReportById(request, response) {
     const report_id = parseInt(request.params.id);
     let reportObject = Report.emptyReport(pool);
     const report = (await reportObject.getReportById(report_id));
-    if (report !== undefined) {
-        response.status(200).json(report);
-    } else {
-        response.status(404).json({'error': 'Не удалось найти отчет с данным идентификатором.'});
-    }
+    if (report !== undefined) response.render("viewingReport.hbs", {"report": JSON.stringify(report), "user": request.session.user});
+    else response.status(404).json({'error': 'Не удалось найти отчет с данным идентификатором.'});
 }
 
 async function getReports(request, response) {
-    console.log(request.session);
-    // console.log(`${request.body}`);
-    let reportObject = Report.emptyReport(pool);
-    const reports = (await reportObject.getReports());
-    response.render("reports.hbs", {"reports": JSON.stringify(reports)});
+    const user_id = request.params.id;
+    const username = request.params.username;
+    if(user_id && username) {
+        request.session.user = JSON.stringify({'id': user_id, 'name': username});
+        let reportObject = Report.emptyReport(pool);
+        const reports = (await reportObject.getReports());
+        response.render("reports.hbs", {"reports": JSON.stringify(reports)});
+    }
+    else response.redirect("http://localhost:5050/login");
 }
 
 async function updateReport(request, response) {
@@ -38,15 +40,15 @@ async function updateReport(request, response) {
         const report_id = parseInt(request.params.id);
         let reportObject = Report.emptyReport(pool);
         const report = (await reportObject.getReportById(report_id));
-        response.render("report.hbs", {"report": JSON.stringify(report)});
+        response.render("report.hbs", {"report": JSON.stringify(report), "user": request.session.user});
     }
     else {
-        // TODO: нужно обновить информацию в отчете + уведомлении!
-        console.log(request.body);
-        // const report = request.body.report;
-        // let reportObject = new Report(pool, report);
-        // reportObject.update();
-        response.status(200).json({"result": "Данные отчета успешно обновлены"});
+        const user_id = request.body.id;
+        const username = request.body.name;
+        const report = request.body;
+        let reportObject = new Report(pool, report);
+        reportObject.update();
+        response.redirect(`/getReports/${user_id}/${username}`);
     }
 }
 

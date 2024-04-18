@@ -1,0 +1,270 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>statistics</title>
+    <!-- BootStrap -->
+    <link href=" https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet" >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        h2 { text-align: center; }
+        table { table-layout: fixed; }
+        td, tr {
+            border-collapse: collapse;
+            border: 2.5px solid grey;
+        }
+    </style>
+    </head>
+    <body>
+      <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <div class="container-fluid">
+            <ul class="navbar-nav">
+              <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('index')}}">Главная</a></li>
+              <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
+              <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('reporting')}}">Отчетность</a></li>
+              <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('managingRoles')}}">Роли</a></li>
+            </ul>
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="{{url_for('profile')}}">
+                  <i class="bi bi-person-circle h1"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </header>
+      <main>
+        <table class="table">
+            <tr>
+                <td>
+                    <div><h2>Среднее время обработки запроса</h2></div>
+                    <div><canvas id="request_schedule"></canvas></div>
+                </td>
+                <td>
+                    <div><h2>Количество запросов в минуту</h2></div>
+                    <div><canvas id="request_rate_schedule"></canvas></div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div><h2>Загрузка центрального процессора</h2></div>
+                    <div><canvas id="CPU_schedule"></canvas></div>
+                </td>
+                <td>
+                    <div><h2>Загрузка оперативной памяти</h2></div>
+                    <div><canvas id="RAM_schedule"></canvas></div>
+                </td>
+            </tr>
+        </table>
+      </main>
+      <!-- BootStrap -->
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+      <!-- ChatJS -->
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script>
+        function getStatistics() {
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', "{{ url_for('statistics') }}");
+            xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+            xhr.responseType = 'json';
+            xhr.send();
+            xhr.onload = () => {
+                let responseObj = xhr.response;
+                console.log(`Получили с сервера следующую статистику:\n${JSON.stringify(responseObj)}`);
+            };
+        }
+
+        setInterval(getStatistics, 5000);
+      </script>
+      <script>
+        /// Скорость обработки запроса
+        function updateDataRequest(chart, newData) {
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data = [newData.value, newData.max - newData.value];
+            });
+            chart.update();
+        }
+
+        const request_data = {
+            value: 200,
+            max: 300,
+            label: "Время обработки запроса"
+        };
+
+        const request_config = {
+            type: 'doughnut',
+            data: {
+                labels: [request_data.label],
+                datasets: [{
+                    data: [request_data.value, request_data.max - request_data.value],
+                    backgroundColor: ['rgba(235, 235, 0, 0.8)', 'rgba(165, 165, 165, 0.1)'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutoutPercentage: 85,
+                rotation: -90,
+                circumference: 180,
+                tooltips: {
+                    enabled: false
+                },
+                legend: {
+                    display: false
+                },
+                animation: {
+                    animateRotate: true,
+                    animateScale: false
+                },
+                title: {
+                    display: true,
+                    text: request_data.label,
+                    fontSize: 16
+                }
+            }
+        };
+        let request_schedule = document.getElementById('request_schedule').getContext('2d');
+        let request_schedule_chart = new Chart(request_schedule, request_config);
+
+        setTimeout("updateDataRequest(request_schedule_chart, {value: 50, max: 300, label: 'Время обработки запроса'})", 5000);
+      </script>
+      <script>
+        /// Кол-во запросов в минуту
+        function updateDataRequestRate(chart, newData) {
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.pop();
+                dataset.data.push(newData);
+            });
+            chart.update();
+        }
+
+        const DATA_COUNT = 12;
+        const labels = [];
+        for (let i = 0; i < DATA_COUNT; ++i) {
+        labels.push(i.toString());
+        }
+        const datapoints = [0, 20, 20, 60, 60, 120, 10, 180, 120, 125, 105, 110];
+        const request_rate_data = {
+        labels: labels,
+        datasets: [
+            {
+            label: 'Кол-во запросов в минуту',
+            data: datapoints,
+            borderColor: '#6495ed',
+            fill: false,
+            cubicInterpolationMode: 'monotone',
+            tension: 0.4
+            }
+        ]
+        };
+
+        const request_rate_config = {
+            type: 'line',
+            data: request_rate_data,
+            options: {
+                responsive: true,
+                plugins: {
+                title: {
+                    display: true,
+                    text: 'Кол-во запросов в минуту'
+                },
+                },
+                interaction: {
+                intersect: false,
+                },
+                scales: {
+                x: {
+                    display: true,
+                    title: {
+                    display: true
+                    }
+                },
+                y: {
+                    display: true,
+                    title: {
+                    display: true,
+                    text: 'Value'
+                    },
+                    suggestedMin: -10,
+                    suggestedMax: 200
+                }
+                }
+            },
+        };
+
+        let request_rate_schedule = document.getElementById('request_rate_schedule').getContext('2d');
+        let request_rate_schedule_chart = new Chart(request_rate_schedule, request_rate_config);
+        setTimeout("updateDataRequestRate(request_rate_schedule_chart, 20)", 8000);
+      </script>
+      <script>
+        /// Загруженность ЦП
+        function updateDataCpu(chart, newData) {
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data = newData;
+            });
+            chart.update();
+        }
+
+        const CPU_data = {
+            labels: [
+                'Занято',
+                'Свободно',
+            ],
+            datasets: [{
+                label: 'My First Dataset',
+                data: [95, 5],
+                backgroundColor: [
+                    'rgb(255, 51, 51)',
+                    'rgb(25, 255, 25)'
+                ],
+                hoverOffset: 4
+            }]
+        };
+        const CPU_config = {
+        type: 'doughnut',
+        data: CPU_data,
+        };
+
+        const CPU_schedule = document.getElementById('CPU_schedule');
+        const CPU_schedule_chart = new Chart(CPU_schedule, CPU_config);
+        setTimeout("updateDataCpu(CPU_schedule_chart, [99, 1])", 6000);
+      </script>
+      <script>
+        /// Загруженность ОЗУ
+        function updateDataRam(chart, newData) {
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data = newData;
+            });
+            chart.update();
+        }
+
+        const RAM_data = {
+            labels: [
+                'Занято',
+                'Свободно'
+            ],
+            datasets: [{
+                label: 'My First Dataset',
+                data: [80, 20],
+                backgroundColor: [
+                    'rgb(255, 77, 0)',
+                    'rgb(0, 230, 0)'
+                ],
+                hoverOffset: 4
+            }]
+        };
+        const RAM_config = {
+        type: 'doughnut',
+        data: RAM_data,
+        };
+
+        const RAM_schedule = document.getElementById('RAM_schedule');
+        const RAM_schedule_chart = new Chart(RAM_schedule, RAM_config);
+        setTimeout("updateDataRam(RAM_schedule_chart, [70, 30])", 7000);
+      </script>
+    </body>
+</html>

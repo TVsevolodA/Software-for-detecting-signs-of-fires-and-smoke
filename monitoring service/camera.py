@@ -8,6 +8,7 @@ import json
 import base64
 import datetime
 import requests
+import psutil
 
 class VideoCamera(object):
 
@@ -39,6 +40,12 @@ class VideoCamera(object):
             self.__status = True
         self.frames: Queue = Queue()
         self.signs: Queue = Queue()
+
+        self.cpu_usage = 0
+        self.ram_usage = 0
+        self.processing_times = [0 for i in range(20)]
+        self.LEN_PROC_TIME = len(self.processing_times)
+        self.iterator = 0
     
     def __del__(self):
         try:
@@ -79,6 +86,9 @@ class VideoCamera(object):
         success, image = self.cap.read()
         if success:
             results = self.model.predict(image)
+
+            self.collecting_statistics(results)
+
             annotated_frame = results[0].plot()
             ret, jpeg = cv2.imencode('.jpg', annotated_frame)
             self.get_classes(results, jpeg)
@@ -101,3 +111,16 @@ class VideoCamera(object):
             dict_classes['Image'] = base64.b64encode(jpeg.tobytes()).decode('utf8').replace("'", '"')
             json_results = json.dumps(dict_classes)
             response = self.producer.send_message(self.dict_camera['name'], json_results)
+
+
+    """
+    Отвечает за сбор статистики камеры
+    """
+    def collecting_statistics(self, res):
+        processing_time = res[0].speed['inference'] / 1000 # В секундах
+        if self.iterator == self.LEN_PROC_TIME:
+            self.iterator = 0
+        self.cpu_usage = psutil.cpu_percent()
+        self.ram_usage = psutil.virtual_memory().percent
+        self.processing_times[self.iterator] = processing_time
+        self.iterator += 1

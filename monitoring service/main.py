@@ -124,6 +124,25 @@ def logout():
     logout_user()
     return redirect(url_for('signIn'))
 
+@app.route('/statistics', methods=["GET", "POST"])
+def statistics():
+    if request.method == 'GET':
+        return render_template('statistics.html')
+    else:
+        statistics_from_cameras = []
+        for ind_cam in range(len(camerasBuilder.getCameras())):
+            cam, _ = camerasBuilder.getVideoCamera(ind_cam)
+            statistics_from_cameras.extend(cam.processing_times)
+        first_camera, _ = camerasBuilder.getVideoCamera(0)
+        cpu_statistics = first_camera.cpu_usage
+        ram_statistics = first_camera.ram_usage
+        general_statistics = {
+            'cpu': cpu_statistics,
+            'ram': ram_statistics,
+            'requests': statistics_from_cameras
+        }
+        return jsonify(general_statistics)
+
 
 @app.after_request
 def redirect_to_signIn(response):

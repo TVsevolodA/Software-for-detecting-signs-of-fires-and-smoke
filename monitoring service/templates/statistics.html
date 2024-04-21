@@ -65,6 +65,8 @@
       <!-- ChatJS -->
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
       <script>
+        const average = array => array.reduce((a, b) => a + b) / array.length;
+
         function getStatistics() {
             let xhr = new XMLHttpRequest();
             xhr.open('POST', "{{ url_for('statistics') }}");
@@ -74,13 +76,20 @@
             xhr.onload = () => {
                 let responseObj = xhr.response;
                 console.log(`Получили с сервера следующую статистику:\n${JSON.stringify(responseObj)}`);
+                const cpu = responseObj.cpu;
+                const ram = responseObj.ram;
+                const requests = responseObj.requests;
+                updateDataCpu(CPU_schedule_chart, [cpu, 100 - cpu]);
+                updateDataRam(RAM_schedule_chart, [ram, 100 - ram]);
+                updateDataRequest(request_schedule_chart, {value: 2 - average(requests), max: 2, label: 'Время обработки запроса'});
+                updateDataRequestRate(request_rate_schedule_chart, 60/average(requests));
             };
         }
 
         setInterval(getStatistics, 5000);
       </script>
       <script>
-        /// Скорость обработки запроса
+        /// Время обработки запроса
         function updateDataRequest(chart, newData) {
             chart.data.datasets.forEach((dataset) => {
                 dataset.data = [newData.value, newData.max - newData.value];
@@ -130,13 +139,13 @@
         let request_schedule = document.getElementById('request_schedule').getContext('2d');
         let request_schedule_chart = new Chart(request_schedule, request_config);
 
-        setTimeout("updateDataRequest(request_schedule_chart, {value: 50, max: 300, label: 'Время обработки запроса'})", 5000);
+        // setTimeout("updateDataRequest(request_schedule_chart, {value: 50, max: 300, label: 'Время обработки запроса'})", 5000);
       </script>
       <script>
         /// Кол-во запросов в минуту
         function updateDataRequestRate(chart, newData) {
             chart.data.datasets.forEach((dataset) => {
-                dataset.data.pop();
+                dataset.data.shift();
                 dataset.data.push(newData);
             });
             chart.update();
@@ -147,7 +156,7 @@
         for (let i = 0; i < DATA_COUNT; ++i) {
         labels.push(i.toString());
         }
-        const datapoints = [0, 20, 20, 60, 60, 120, 10, 180, 120, 125, 105, 110];
+        const datapoints = [0, 20, 45, 60, 79, 80, 63, 91, 100, 88, 92, 97];
         const request_rate_data = {
         labels: labels,
         datasets: [
@@ -189,8 +198,8 @@
                     display: true,
                     text: 'Value'
                     },
-                    suggestedMin: -10,
-                    suggestedMax: 200
+                    suggestedMin: 0,
+                    suggestedMax: 120
                 }
                 }
             },
@@ -198,7 +207,7 @@
 
         let request_rate_schedule = document.getElementById('request_rate_schedule').getContext('2d');
         let request_rate_schedule_chart = new Chart(request_rate_schedule, request_rate_config);
-        setTimeout("updateDataRequestRate(request_rate_schedule_chart, 20)", 8000);
+        // setTimeout("updateDataRequestRate(request_rate_schedule_chart, 20)", 8000);
       </script>
       <script>
         /// Загруженность ЦП
@@ -231,7 +240,7 @@
 
         const CPU_schedule = document.getElementById('CPU_schedule');
         const CPU_schedule_chart = new Chart(CPU_schedule, CPU_config);
-        setTimeout("updateDataCpu(CPU_schedule_chart, [99, 1])", 6000);
+        // setTimeout("updateDataCpu(CPU_schedule_chart, [99, 1])", 6000);
       </script>
       <script>
         /// Загруженность ОЗУ
@@ -264,7 +273,7 @@
 
         const RAM_schedule = document.getElementById('RAM_schedule');
         const RAM_schedule_chart = new Chart(RAM_schedule, RAM_config);
-        setTimeout("updateDataRam(RAM_schedule_chart, [70, 30])", 7000);
+        // setTimeout("updateDataRam(RAM_schedule_chart, [70, 30])", 7000);
       </script>
     </body>
 </html>

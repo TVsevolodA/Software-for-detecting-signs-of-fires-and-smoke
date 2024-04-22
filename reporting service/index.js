@@ -33,7 +33,7 @@ app.get('/', (request, response) => {
 
 app.get('/getReportById/:id', (request, response) => reportManager.getReportById(request, response));
 app.post('/getReports',    (request, response) => reportManager.getReports(request, response));
-app.get('/getReports/:id/:username',    (request, response) => reportManager.getReports(request, response));
+app.get('/getReports/:id/:username/:role',    (request, response) => reportManager.getReports(request, response));
 app.get('/getReports',    (request, response) => reportManager.getReports(request, response));
 app.get('/updateReport/:id', (request, response) => reportManager.updateReport(request, response));
 app.post('/updateReport/:id', urlencodedParser, (request, response) => reportManager.updateReport(request, response));

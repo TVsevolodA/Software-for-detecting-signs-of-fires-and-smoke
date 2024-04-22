@@ -25,9 +25,10 @@
         <div class="container-fluid">
           <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5050">Главная</a></li>
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="#" id="mainReport">Отчетность</a></li>
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5050/managingRoles">Роли</a></li>
+            
+            <li class="nav-item"><a class="nav-link active adminLinks" aria-current="page" href="http://localhost:5001">Управление БД</a></li>
+            <li class="nav-item"><a class="nav-link active adminLinks" aria-current="page" href="http://localhost:5050/managingRoles">Роли</a></li>
           </ul>
           <ul class="navbar-nav">
             <li class="nav-item">
@@ -144,11 +145,25 @@
     <!-- BootStrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script>
-      //@ts-check
-      const report = {{{report}}};
-      const currentUser = {{{user}}};
+        const report = {{{report}}};
+        const currentUser = {{{user}}};
+        
+        document.getElementById('mainReport').href = `/getReports/${currentUser.id}/${currentUser.name}/${currentUser.role}`;
+        if (currentUser.role !== 'administrator') {
+            let els = document.getElementsByClassName('adminLinks');
+            for (let i = 0; i < els.length; i++) {
+                els[i].style.display = 'none';
+            }
+        }
+      
 
-      document.getElementById('mainReport').href = `/getReports/${currentUser.id}/${currentUser.name}`;
+      /*
+      const dtIncident = new Date(report.datetime);
+      const dtDate = dtIncident.getDate() < 10 ? '0' + dtIncident.getDate() : dtIncident.getDate();
+      const dtMonth = dtIncident.getMonth() + 1 < 10 ? '0' + (dtIncident.getMonth() + 1) : (dtIncident.getMonth() + 1);
+      const timeDisplay = dtDate + '-' + dtMonth + '-' + dtIncident.getFullYear() + ' ' + (dtIncident.getHours() + 4) + ':' + dtIncident.getMinutes();
+      */
+
 
       document.getElementById('datetime').value = report.datetime;
       document.getElementById('username').value = report.username;

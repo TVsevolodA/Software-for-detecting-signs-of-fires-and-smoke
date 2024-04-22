@@ -17,7 +17,8 @@ scheduler.start()
 app = Flask(__name__)
 
 customer_videos = {}
-thread = None
+# thread = None
+thread = []
 thread_lock = Lock()
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, async_mode='threading')
@@ -63,8 +64,12 @@ def signUp():
         # if request.method == 'POST':
         new_user = User(username=username, email=email, role='dispatcher')
         new_user.set_password(password)
-        new_user.register_user_in_system()
-        return redirect(url_for('signIn'))
+        res_reg = new_user.register_user_in_system()
+        if res_reg.status_code != 200:
+            flash(json.loads(res_reg.text), 'error')
+            return render_template('signUp.html')
+        else:
+            return redirect(url_for('signIn'))
     return render_template('signUp.html')
 
 @app.route('/profile', methods=['GET'])
@@ -72,13 +77,15 @@ def signUp():
 def profile():
     username = current_user.username
     email = current_user.email
-    return render_template('profile.html', username=username, email=email)
+    role = current_user.role
+    return render_template('profile.html', username=username, email=email, role=role)
 
 @app.route('/editProfile', methods=['GET', 'POST'])
 @login_required
 def editProfile():
     username = current_user.username
     email = current_user.email
+    role = current_user.role
     if request.method == 'POST':
         login_form = request.form
         newUsername = login_form['username']
@@ -105,7 +112,7 @@ def editProfile():
                     return redirect(url_for('profile'))
                 else:
                     flash('Неверно указан пароль.', 'error')
-                    return render_template('editProfile.html', username=newUsername, email=newEmail)
+                    return render_template('editProfile.html', username=newUsername, email=newEmail, role=role)
             else:
                 # Изменение данных без пароля
                 oldDataUser.changing_profile(username=newUsername, email=newEmail)
@@ -115,7 +122,7 @@ def editProfile():
                 return redirect(url_for('profile'))
         else:
             flash('Введенный адрес электронной почты уже зарегистрирован в системе.', 'error')
-    return render_template('editProfile.html', username=username, email=email)
+    return render_template('editProfile.html', username=username, email=email, role=role)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -125,9 +132,11 @@ def logout():
     return redirect(url_for('signIn'))
 
 @app.route('/statistics', methods=["GET", "POST"])
+@login_required
 def statistics():
     if request.method == 'GET':
-        return render_template('statistics.html')
+        role = current_user.role
+        return render_template('statistics.html', role=role)
     else:
         statistics_from_cameras = []
         for ind_cam in range(len(camerasBuilder.getCameras())):
@@ -152,8 +161,10 @@ def redirect_to_signIn(response):
 
 
 @app.route('/')
+@login_required
 def index():
-    return render_template('index.html', cameras = camerasBuilder.cameras)
+    role = current_user.role
+    return render_template('index.html', cameras = camerasBuilder.cameras, role=role)
 
 def gen(id_camera_web):
     while True:
@@ -169,6 +180,7 @@ def gen(id_camera_web):
                 b'Content-Type: image/jpeg\r\n\r\n\r\n\r\n')
 
 @app.route('/video_feed/<id>/')
+@login_required
 def video_feed(id):
     return Response(gen(int(id)),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -178,13 +190,17 @@ def video_feed(id):
 def reporting():
     user_id = current_user.user_id
     username = current_user.username
-    return redirect(f'http://localhost:4000/getReports/{user_id}/{username}', code=307)
+    role = current_user.role
+    return redirect(f'http://localhost:4000/getReports/{user_id}/{username}/{role}', code=307)
 
 @app.route('/addCamera', methods=["GET"])
+@login_required
 def addCamera():
-    return render_template('addCamera.html')
+    role = current_user.role
+    return render_template('addCamera.html', role=role)
 
 @app.route('/addedCamera', methods=["POST"])
+@login_required
 def addedCamera():
     jsonObject = request.json
     URL = jsonObject['url']
@@ -196,7 +212,6 @@ def addedCamera():
         return jsonify({'statusCode': 400, 'res': f'Произошла ошибка при установке связи с камерой!'})
     if test.status_code == 404:
         return jsonify({'statusCode': 400, 'res': 'Ошибка! Трансляция недоступна или указан неверный URl'})
-        # return f'<h1>Ошибка! Трансляция недоступна или указан неверный URl</h1>'
 
     json_url = '{"url": "' + URL + '"}'
     req = requests.post('http://data_service_sm:3000/registerCamera', json=json.loads(json_url))
@@ -206,64 +221,73 @@ def addedCamera():
         CAMERA_ID = DATA['index']
         camerasBuilder.addCameraStream(DATA)
         return jsonify({'statusCode': 200, 'res': f'Успешно добавлена новая камера с id = {CAMERA_ID}'})
-        # return f'<h1>Успешно добавлена новая камера с id = {CAMERA_ID}!!!</h1>'
     else:
         res = dict_req['result']
         return jsonify({'statusCode': 400, 'res': f'Ошибка! {res}'})
-        # return f'<h1>Ошибка! {res}</h1>'
 
 @app.route('/infoСamera', methods=["GET"], defaults={'camera': 'all', 'idCamera': '-1', 'idStream': '-1'})
 @app.route('/infoСamera/cameras/<camera>/<idCamera>/<idStream>', methods=["GET"])
+@login_required
 def infoСamera(camera, idCamera, idStream):
     requestBody = '{"camera": "' + camera + '"}'
     req = requests.get('http://data_service_sm:3000/infoCamera', json=json.loads(requestBody))
     dict_req = json.loads(req.text)
     if req.status_code == 200:
+        role = current_user.role
         if camera == 'all':
-            return render_template('infoСamera.html', infoCameras=dict_req)
+            return render_template('infoСamera.html', infoCameras=dict_req, role=role)
         else:
-            return render_template('infoСameraAlone.html', idCamera=int(idCamera), stream=idStream)
+            return render_template('infoСameraAlone.html', idCamera=int(idCamera), stream=idStream, role=role)
     else:
         return f'<h1>Ошибка:\n{dict_req}</h1>'
 
 @app.route('/scheduledEvents', methods=["GET", "POST"])
+@login_required
 def scheduledEvents():
     if request.method == 'GET':
+        role = current_user.role
         responseEventsInDb = action_planner.get_tasks()
         eventsInDb = json.loads(responseEventsInDb.text)
-        return render_template('scheduledEvents.html', events=eventsInDb)
+        return render_template('scheduledEvents.html', events=eventsInDb, role=role)
     else:
         idEvent = request.json
         res = action_planner.delete_task(idEvent['idEvent'])
         return jsonify({'statusCode': 201, 'res': res})
 
 @app.route('/eventData/<idEvent>', methods=["GET", "POST"])
+@login_required
 def eventData(idEvent):
     if request.method == 'GET':
+        role = current_user.role
         eventData = action_planner.get_task(int(idEvent))
-        return render_template('eventData.html', event=eventData)
+        return render_template('eventData.html', event=eventData, role=role)
     else:
         res = action_planner.delete_task(idEvent)
         return jsonify({'statusCode': 201, 'res': res})
 
 
 @app.route('/scheduledActions/<idCamera>', methods=["GET"])
+@login_required
 def scheduledActions(idCamera):
-    return render_template('scheduleActionIndividual.html', idCamera=idCamera)
+    role = current_user.role
+    return render_template('scheduleActionIndividual.html', idCamera=idCamera, role=role)
 
 @app.route('/setAction', methods=["POST"])
+@login_required
 def setAction():
     data = request.form
     action_planner.add_task(data)
     return redirect(url_for('index'))
 
 @app.route('/managingRoles', methods=["GET", "POST"])
+@login_required
 def managingRoles():
     if request.method == 'GET':
         req = requests.get('http://data_service_sm:3000/userRoles')
         if req.status_code == 200:
+            role = current_user.role
             dict_req = json.loads(req.text)
-            return render_template('managingRoles.html', users=dict_req['users'])
+            return render_template('managingRoles.html', users=dict_req['users'], role=role)
         else:
             return '<h1>Произошла ошибка при обращении к базе данных1</h1>'
     else:
@@ -276,29 +300,29 @@ def managingRoles():
             return jsonify({'statusCode': 500, 'res': f'Ошибка! {res}'})
 
 
-def background_thread(ids):
+def background_thread(id):
     while True:
-        for id in ids:
-            camera, _ = camerasBuilder.getVideoCamera(id)
-            signs = {}
-            if (camera.getStatusCamera()):
-                signs = camera.signs.get()
-            
-            new_signs = {}
-            for sign in ['Fire', 'Smoke']:
-                el = signs.get(sign)
-                if el is not None:
-                    new_signs[sign] = el
-            if not new_signs:
-                continue
-            socketio.emit('data', {'camera_name': camera.dict_camera['name'], 'value': new_signs})
+        camera, _ = camerasBuilder.getVideoCamera(id)
+        signs = {}
+        if (camera.getStatusCamera()):
+            signs = camera.signs.get()
+        
+        new_signs = {}
+        for sign in ['Fire', 'Smoke']:
+            el = signs.get(sign)
+            if el is not None:
+                new_signs[sign] = el
+        socketio.emit('data', {'camera_name': camera.dict_camera['name'], 'value': new_signs})
 
 def getSigns():
-    global thread
-    with thread_lock:
-        if thread is None:
-            id_videos = customer_videos.get(request.sid)
-            thread = socketio.start_background_task(background_thread, id_videos)
+    id_videos = customer_videos.get(request.sid)
+    for id in id_videos:
+        socketio.start_background_task(background_thread, id)
+    # global thread
+    # with thread_lock:
+    #     if thread is None:
+    #         id_videos = customer_videos.get(request.sid)
+    #         thread = socketio.start_background_task(background_thread, id_videos)
 
 @socketio.on('my_event')
 def saving_users_video_id(arg):

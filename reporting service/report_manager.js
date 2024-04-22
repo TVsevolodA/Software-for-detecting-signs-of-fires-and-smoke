@@ -26,11 +26,12 @@ async function getReportById(request, response) {
 async function getReports(request, response) {
     const user_id = request.params.id;
     const username = request.params.username;
-    if(user_id && username) {
-        request.session.user = JSON.stringify({'id': user_id, 'name': username});
+    const role = request.params.role;
+    if(user_id && username && role) {
+        request.session.user = JSON.stringify({'id': user_id, 'name': username, 'role': role});
         let reportObject = Report.emptyReport(pool);
         const reports = (await reportObject.getReports());
-        response.render("reports.hbs", {"reports": JSON.stringify(reports)});
+        response.render("reports.hbs", {"reports": JSON.stringify(reports), "id": user_id, "username": username, "role": role});
     }
     else response.redirect("http://localhost:5050/login");
 }
@@ -48,7 +49,7 @@ async function updateReport(request, response) {
         const report = request.body;
         let reportObject = new Report(pool, report);
         reportObject.update();
-        response.redirect(`/getReports/${user_id}/${username}`);
+        response.redirect(`/getReports/${user_id}/${username}/${request.session.role}`);
     }
 }
 

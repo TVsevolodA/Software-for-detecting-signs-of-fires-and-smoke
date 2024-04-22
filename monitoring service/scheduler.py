@@ -1,3 +1,4 @@
+import apscheduler
 import requests
 import json
 
@@ -77,6 +78,10 @@ class Scheduler():
         """
         Удаление триггера из БД
         """
+        try:
+            self.scheduler.remove_job(str(idEvent))
+        except apscheduler.jobstores.base.JobLookupError:
+            pass
         req = requests.post('http://data_service_sm:3000/deleteEventTriggerById', json={'idEvent': idEvent})
         result = json.loads(req.text)
         return result

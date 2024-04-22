@@ -37,7 +37,8 @@ class User(UserMixin):
             'password_hash': self.password_hash,
             'role': self.role
         }
-        requests.post('http://data_service_sm:3000/registerUser', json={'user_json': user_json})
+        req = requests.post('http://data_service_sm:3000/registerUser', json={'user_json': user_json})
+        return req
 
     def changing_profile(self, username=None, email=None):
         self.username = username

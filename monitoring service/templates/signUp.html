@@ -72,7 +72,7 @@
             <input type="submit" class="btn btn-primary btn-block mb-3" value="Зарегистрироваться">
         </div>
         <div>
-            <a href="{{url_for('signIn')}}" class="link-info link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Уже есть аккаунт</a>
+            <a href="{{url_for('signIn')}}" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Уже есть аккаунт</a>
         </div>
       </form>
     </main>
@@ -102,11 +102,20 @@
                         ['matchingPasswords', ['Пожалуйста, введите пароль.', '• Пароли не совпадают']],
                     ]);
 
+                    /// Проверка почты
+                    let email = document.getElementById('login').value;
+                    const emailValidator = new RegExp(/^((?!\.)[\w\-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/gm);
+                    const resultValidatorEmail = emailValidator.test(email);
+                    if (!resultValidatorEmail) {
+                        validForm = false;
+                        document.getElementById('login').setCustomValidity('Данный адрес не является действительным адресом электоронной почты.');
+                        // document.getElementById('emailLabel').innerHTML = 'Данный адрес не является действительным адресом электоронной почты.';
+                    }
+
+                    /// Проверка пароля;
                     let password = document.getElementById('password').value;
                     let passwordRepetition = document.getElementById('repeatPassword').value;
                     const passwordValidator = new RegExp(/^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,16}$/gm);
-                    
-                    /// Проверка пароля;
                     const resultValidator = passwordValidator.test(password);
                     if (!resultValidator) {
                         checkList.set('presenceLettersAndNumbers', false);
@@ -138,6 +147,7 @@
                     else {
                         document.getElementById('password').setCustomValidity('');
                         document.getElementById('repeatPassword').setCustomValidity('');
+                        document.getElementById('login').setCustomValidity('');
                     }
 
                     form.classList.add('was-validated');

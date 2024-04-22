@@ -10,9 +10,10 @@
             a { text-decoration:none; }
             body, main { display: flex; }
             main {
+                margin: 2%;
                 justify-content: center;
-                align-items: center;
-                height: 100%;
+                /* align-items: center;
+                height: 100%; */
             }
             body {
                 flex-direction: column;
@@ -61,9 +62,12 @@
                 <div class="container-fluid">
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('index')}}">Главная</a></li>
-                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
                     <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('reporting')}}">Отчетность</a></li>
-                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('managingRoles')}}">Роли</a></li>
+                    {% if role == 'administrator' %}
+                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5001">Управление БД</a></li>
+                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('managingRoles')}}">Роли</a></li>
+                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{url_for('statistics')}}">Статистика</a></li>
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item">

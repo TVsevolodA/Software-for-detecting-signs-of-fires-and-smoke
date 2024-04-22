@@ -59,6 +59,7 @@ CREATE TABLE triggers (
 );
 
 INSERT INTO users (username, email, password_hash, role) VALUES ('', '', '', 'system');
+-- INSERT INTO users (username, email, password_hash, role) VALUES ('Всеволод', 'tri-v@ya.ru', '', 'administrator');
 
 INSERT INTO location_cameras (longitude, latitude, address) VALUES (45.980185, 51.529657, 'г.Саратов,ул.Политехническая,77');
 -- INSERT INTO location_cameras (longitude, latitude, address) VALUES (46.02105074284403, 51.53410530670002, 'Саратов, улица имени В.И. Чапаева, 61');

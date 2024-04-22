@@ -50,14 +50,16 @@ module.exports= class Report{
         measures_taken = $3,
         consequences = $4,
         conclusion = $5
-        WHERE number_incident = $6 AND event_based IS NOT TRUE`,
+        WHERE report_id = $6`,
+        // WHERE number_incident = $6 AND report_id = $7 AND event_based IS NOT TRUE
         [
             this.datetime,
             this.description,
             this.measures_taken,
             this.consequences,
             this.conclusion,
-            this.number_incident
+            // this.number_incident,
+            this.report_id
         ]);
     }
 }

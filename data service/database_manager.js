@@ -93,13 +93,17 @@ async function getUserByLogin(request, response) {
 async function registerUser(request, response) {
     const user_json = request.body.user_json;
     let userObject = User.withoutId(pool, user_json);
-    const userInDb = (await userObject.insertWithReturnId());
-    response.status(200).json(userInDb);
+    try {
+        const userInDb = (await userObject.insertWithReturnId());
+        response.status(200).json(userInDb);
+      } catch (err) {
+        response.status(500).json('Данная почта уже имеется в системе.');
+      }
 }
 
 function profileUpdate(request, response) {
     const modifiedDataUser = request.body.modifiedDataUser;
-    console.log(`Получили объект нового пользователя: ${JSON.stringify(modifiedDataUser)}`);
+    // console.log(`Получили объект нового пользователя: ${JSON.stringify(modifiedDataUser)}`);
     let userObject = new User(pool, modifiedDataUser);
     userObject.update();
     response.status(200).json({"result": "Данные о пользователе успешно обновлены"});

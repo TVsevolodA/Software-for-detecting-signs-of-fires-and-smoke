@@ -33,6 +33,7 @@ services:
       - db
     ports:
       - 3000:3000
+    restart: always
 
   # NodeJS
   reportingService:
@@ -50,6 +51,7 @@ services:
   monitoringService:
     image: monitoring-template
     container_name: monitoring_service_sm
+    # build: "./monitoring service"
     env_file:
       - monitoring service/.env
     # depends_on:
@@ -80,3 +82,13 @@ services:
       - 5432:5432
     volumes:
       - ./schema_db.sql:/docker-entrypoint-initdb.d/init_tables.sql
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "habrpguser@habr.com"
+      PGADMIN_DEFAULT_PASSWORD: "pgadminpwd4habr"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - 5001:80

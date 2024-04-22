@@ -29,7 +29,7 @@ app.post('/registerCamera', async (request, response) => {
   databaseManager.registerCamera(request, response);
   await new Promise((resolve) => setTimeout(resolve, 1000));
   await consumer.disconnect();
-  await run();
+  run();
 });
 
 app.post('/changeCameraStatus', (request, response) => databaseManager.changeCameraStatus(request, response));
@@ -71,7 +71,6 @@ app.get('/generateReports', async (request, response) => {
  [                       Kafka                             ]
  [=========================================================]
 */
-// FIXME: есть проблема с запуском! Нужно запускать только после инициализации Kafka!
 const { Kafka } = require('kafkajs');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
@@ -82,7 +81,12 @@ const brokers = [process.env.KAFKA_DEFAULT_BROKER];
 const kafka = new Kafka({ clientId: clientId, brokers: brokers });
 const consumer = kafka.consumer({ groupId: clientId });
 
-async () => await run();
+// async () => {
+//   await new Promise((resolve) => setTimeout(resolve, 1000));
+//   await consumer.disconnect();
+//   await run();
+// }
+run();
 
 async function run() {
   ///  Получаем список топиков

@@ -25,9 +25,10 @@
         <div class="container-fluid">
           <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5050">Главная</a></li>
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Управление БД</a></li>
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="#" id="mainReport">Отчетность</a></li>
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5050/managingRoles">Роли</a></li>
+            
+            <li class="nav-item"><a class="nav-link active adminLinks" aria-current="page" href="http://localhost:5001">Управление БД</a></li>
+            <li class="nav-item"><a class="nav-link active adminLinks" aria-current="page" href="http://localhost:5050/managingRoles">Роли</a></li>
           </ul>
           <ul class="navbar-nav">
             <li class="nav-item">
@@ -157,7 +158,14 @@
       const report = {{{report}}};
       const currentUser = {{{user}}};
 
-      document.getElementById('mainReport').href = `/getReports/${currentUser.id}/${currentUser.name}`;
+      document.getElementById('mainReport').href = `/getReports/${currentUser.id}/${currentUser.name}/${currentUser.role}`;
+      if (currentUser.role !== 'administrator') {
+        let els = document.getElementsByClassName('adminLinks');
+        for (let i = 0; i < els.length; i++) {
+          els[i].style.display = 'none';
+        }
+      }
+
       /// Если роль изначально системная, то подставляем id пользоавтеля
       if (report.role === 'system') {
         document.getElementById('duty').value = currentUser.id;
@@ -166,6 +174,13 @@
 
       document.getElementById('report_id').value = report.report_id;
       document.getElementById('number_incident').value = report.number_incident;
+
+      /*
+      const dtIncident = new Date(report.datetime);
+      const dtDate = dtIncident.getDate() < 10 ? '0' + dtIncident.getDate() : dtIncident.getDate();
+      const dtMonth = dtIncident.getMonth() + 1 < 10 ? '0' + (dtIncident.getMonth() + 1) : (dtIncident.getMonth() + 1);
+      const timeDisplay = dtDate + '-' + dtMonth + '-' + dtIncident.getFullYear() + ' ' + (dtIncident.getHours() + 4) + ':' + dtIncident.getMinutes();
+      */
 
       document.getElementById('datetime').value = report.datetime;
       document.getElementById('description').value = report.description;

@@ -89,6 +89,12 @@ class VideoCamera(object):
 
             self.collecting_statistics(results)
 
+            # /root/.config/Ultralytics/Arial.Unicode.ttf
+            class_mapping = { 0: 'Пожар', 1: 'Задымление' }
+            for result in results:
+                for cls_id, custom_label in class_mapping.items():
+                    if cls_id in result.names:
+                        result.names[cls_id] = custom_label
             annotated_frame = results[0].plot()
             ret, jpeg = cv2.imencode('.jpg', annotated_frame)
             self.get_classes(results, jpeg)

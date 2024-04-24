@@ -10,8 +10,8 @@ module.exports= class Notification{
         this.report_compiled = notification_data.report_compiled;
 
         const events = new Map([
-            ['Fire', notification_data.Fire],
-            ['Smoke', notification_data.Smoke],
+            ['Fire', notification_data.Пожар], //Fire
+            ['Smoke', notification_data.Задымление], //Smoke
             ['Camera_event', notification_data.Camera_event],
         ]);
       

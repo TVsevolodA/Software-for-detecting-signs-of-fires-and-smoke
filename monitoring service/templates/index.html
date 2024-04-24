@@ -152,8 +152,8 @@
         let signs = JSON.stringify(value);
         signs = JSON.parse(signs);
         let detectedSigns = '';
-        if (signs.Fire !== undefined) detectedSigns += `Признаки пожара: ${signs.Fire}\n`;
-        if (signs.Smoke !== undefined) detectedSigns += `Признаки задымления: ${signs.Smoke}`;
+        if (signs.Пожар !== undefined) detectedSigns += `Признаки пожара: ${signs.Пожар}\n`; // Fire
+        if (signs.Задымление !== undefined) detectedSigns += `Признаки задымления: ${signs.Задымление}`; // Smoke
         return detectedSigns;
       }
 
@@ -259,8 +259,8 @@
             let newSigns = JSON.stringify(data.value);
             newSigns = JSON.parse(newSigns);
             let detectedSigns = '';
-            if (newSigns.Fire !== undefined) detectedSigns += `Признаки пожара: ${newSigns.Fire}\n`;
-            if (newSigns.Smoke !== undefined) detectedSigns += `Признаки задымления: ${newSigns.Smoke}`;
+            if (newSigns.Пожар !== undefined) detectedSigns += `Признаки пожара: ${newSigns.Пожар}\n`; // Fire
+            if (newSigns.Задымление !== undefined) detectedSigns += `Признаки задымления: ${newSigns.Задымление}`; // Smoke
             let notification = document.getElementById(data.camera_name);
             if (notification !== null) notification.innerHTML = detectedSigns;
           }

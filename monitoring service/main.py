@@ -308,7 +308,7 @@ def background_thread(id):
             signs = camera.signs.get()
         
         new_signs = {}
-        for sign in ['Fire', 'Smoke']:
+        for sign in ['Пожар', 'Задымление']: # ['Fire', 'Smoke']
             el = signs.get(sign)
             if el is not None:
                 new_signs[sign] = el

@@ -33,6 +33,16 @@ def load_user(user_id):
         return gettingUser
     return None
 
+@app.errorhandler(404)
+def not_found_error(error):
+    flash('Извините, страница не найдена.', 'error')
+    return render_template('errorHandler.html'), 404
+
+@app.errorhandler(500)
+def server_error(error):
+    flash('Извините, на сервере произошла ошибка. Повторите попытку позже.', 'error')
+    return render_template('errorHandler.html'), 500
+
 @app.route('/login', methods=['GET', 'POST'])
 def signIn():
     if request.method == 'GET':
@@ -220,7 +230,7 @@ def addedCamera():
         DATA = dict_req['data']
         CAMERA_ID = DATA['index']
         camerasBuilder.addCameraStream(DATA)
-        return jsonify({'statusCode': 200, 'res': f'Успешно добавлена новая камера с id = {CAMERA_ID}'})
+        return jsonify({'statusCode': 200, 'res': f'Успешно добавлена новая камера.'}) #  с id = {CAMERA_ID}
     else:
         res = dict_req['result']
         return jsonify({'statusCode': 400, 'res': f'Ошибка! {res}'})

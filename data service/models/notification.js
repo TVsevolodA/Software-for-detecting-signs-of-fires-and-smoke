@@ -41,7 +41,9 @@ module.exports= class Notification{
     }
 
     async updateWithReturnId() {
-        return await this.pool.query(`UPDATE notifications SET datetime = $2, type_event = $3, captured_image = $4 WHERE camera_data = $1 AND NOT report_compiled;`, [this.camera_data, this.datetime, this.type_event, this.captured_image]);
+        if (this.captured_image.length !== 0) {
+            return await this.pool.query(`UPDATE notifications SET datetime = $2, type_event = $3, captured_image = $4 WHERE camera_data = $1 AND NOT report_compiled;`, [this.camera_data, this.datetime, this.type_event, this.captured_image]);
+        }
     }
 
     async updateNotificationStatusProcessed(camera_data) {

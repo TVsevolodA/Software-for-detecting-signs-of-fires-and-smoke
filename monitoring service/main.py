@@ -35,13 +35,11 @@ def load_user(user_id):
 
 @app.errorhandler(404)
 def not_found_error(error):
-    flash('Извините, страница не найдена.', 'error')
-    return render_template('errorHandler.html'), 404
+    return render_template('error404.html'), 404
 
 @app.errorhandler(500)
 def server_error(error):
-    flash('Извините, на сервере произошла ошибка. Повторите попытку позже.', 'error')
-    return render_template('errorHandler.html'), 500
+    return render_template('error500.html'), 500
 
 @app.route('/login', methods=['GET', 'POST'])
 def signIn():

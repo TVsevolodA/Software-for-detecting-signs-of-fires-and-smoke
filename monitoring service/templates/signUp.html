@@ -12,6 +12,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100%;
         }
         form {
             text-align: center;
@@ -69,7 +70,7 @@
             {% endif %}
         {% endwith %}
         <div>
-            <input type="submit" class="btn btn-primary btn-block mb-3" value="Зарегистрироваться">
+            <input type="submit" class="btn btn-primary btn-block mb-3 btn-lg" value="Зарегистрироваться">
         </div>
         <div>
             <a href="{{url_for('signIn')}}" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Уже есть аккаунт</a>

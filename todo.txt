@@ -1,5 +1,5 @@
 Для запуска камер:
-1) ffmpeg -re -probesize 32 -analyzeduration 0 -fflags +genpts -stream_loop -1 -i 1.mp4 -c:v libx264 -c:a aac -s 352x288 -f flv rtmp://camera:5000/hls/xxx
+1) ffmpeg -re -probesize 32 -analyzeduration 0 -fflags +genpts -stream_loop -1 -i 3.mp4 -c:v libx264 -c:a aac -s 352x288 -f flv rtmp://camera:5000/hls/xxx
 2) ffmpeg -re -probesize 32 -analyzeduration 0 -fflags +genpts -stream_loop -1 -i 2.mp4 -c:v libx264 -c:a aac -s 352x288 -f flv rtmp://hi_watch:5000/hls/xxx
 
 UPDATE users SET role = 'administrator' WHERE user_id = 2;

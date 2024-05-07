@@ -66,6 +66,10 @@ app.get('/generateReports', async (request, response) => {
   response.json({'status': 'Отчет успешно создан'});
 });
 
+// app.use(function(error, request, response, next) {
+//   response.status(500).render("500.hbs");
+// });
+
 /*
  [=========================================================]
  [                       Kafka                             ]

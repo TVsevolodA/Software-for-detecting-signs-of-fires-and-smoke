@@ -174,7 +174,8 @@
                     document.getElementById('warningDateEventObject').innerHTML = 'Пожалуйста, укажите дату и время события.';
                 }
                 else if (currentDateTime > userDateTime) {
-                    // FIXME: есть косяк, что если указать время меньше текущего, то форма все равно отправится!
+                    event.preventDefault();
+                    event.stopPropagation();
                     date_event_object.setCustomValidity('Дата и время события должны быть больше текущих.');
                     document.getElementById('warningDateEventObject').innerHTML = 'Дата и время события должны быть больше текущих.';
                 }

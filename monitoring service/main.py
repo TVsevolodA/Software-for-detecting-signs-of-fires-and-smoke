@@ -1,5 +1,5 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, render_template, Response, request, redirect, url_for, jsonify, flash
+from flask import Flask, render_template, Response, request, redirect, url_for, jsonify, flash, abort
 from flask_socketio import SocketIO
 from threading import Lock
 from camera_builder import camerasBuilder
@@ -24,15 +24,6 @@ app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, async_mode='threading')
 login = LoginManager(app)
 
-@login.user_loader
-def load_user(user_id):
-    req = requests.get('http://data_service_sm:3000/getUserById', json={'user_id': user_id})
-    if req.status_code == 200:
-        objectuser = json.loads(req.text)
-        gettingUser = User(user_id=objectuser['user_id'], username=objectuser['username'], email=objectuser['email'], password_hash=objectuser['password_hash'], role=objectuser['role'])
-        return gettingUser
-    return None
-
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('error404.html'), 404
@@ -40,6 +31,18 @@ def not_found_error(error):
 @app.errorhandler(500)
 def server_error(error):
     return render_template('error500.html'), 500
+
+@login.user_loader
+def load_user(user_id):
+    try:
+        req = requests.get('http://data_service_sm:3000/getUserById', json={'user_id': user_id})
+        if req.status_code == 200:
+            objectuser = json.loads(req.text)
+            gettingUser = User(user_id=objectuser['user_id'], username=objectuser['username'], email=objectuser['email'], password_hash=objectuser['password_hash'], role=objectuser['role'])
+            return gettingUser
+    except Exception:
+        pass
+    return None
 
 @app.route('/login', methods=['GET', 'POST'])
 def signIn():

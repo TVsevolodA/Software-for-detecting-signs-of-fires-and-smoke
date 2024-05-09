@@ -44,12 +44,14 @@ async function updateReport(request, response) {
         response.render("report.hbs", {"report": JSON.stringify(report), "user": request.session.user});
     }
     else {
-        const user_id = request.body.id;
-        const username = request.body.name;
+        const user = JSON.parse(request.session.user);
+        const user_id = user.id;
+        const username = user.name;
+        const user_role = user.role;
         const report = request.body;
         let reportObject = new Report(pool, report);
         reportObject.update();
-        response.redirect(`/getReports/${user_id}/${username}/${request.session.role}`);
+        response.redirect(`/getReports/${user_id}/${username}/${user_role}`);
     }
 }
 

@@ -169,10 +169,10 @@
       }
 
       /// Если роль изначально системная, то подставляем id пользоавтеля
-      if (report.role === 'system') {
-        document.getElementById('duty').value = currentUser.id;
-        document.getElementById('username').value = currentUser.name;
-      }
+      // if (report.role === 'system') {
+      document.getElementById('duty').value = currentUser.id;
+      document.getElementById('username').value = currentUser.name;
+      // }
 
       document.getElementById('report_id').value = report.report_id;
       document.getElementById('number_incident').value = report.number_incident;
